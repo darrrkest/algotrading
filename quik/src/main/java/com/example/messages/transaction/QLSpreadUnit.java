@@ -1,0 +1,6 @@
+package com.example.messages.transaction;
+
+public enum QLSpreadUnit {
+    PERCENTS,
+    PRICE_UNITS
+}
