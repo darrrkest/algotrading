@@ -6,20 +6,26 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
-@JsonTypeName("InstrumentParamsSubscriptionRequest")
-public final class QLInstrumentParamsSubscriptionRequest extends QLMessage {
+@JsonTypeName("OrderBookSubscriptionRequest")
+public class QLOrderBookSubscriptionRequest extends QLMessage {
 
     @JsonProperty("instrument")
     private String instrument;
 
-    public QLInstrumentParamsSubscriptionRequest(String instrument) {
+    @JsonProperty("id")
+    private UUID id;
+
+    public QLOrderBookSubscriptionRequest(String instrument) {
         this.instrument = instrument;
+        id = UUID.randomUUID();
     }
 
     @Override
     public QLMessageType getMessageType() {
-        return QLMessageType.INSTRUMENT_PARAMS_SUBSCRIPTION_REQUEST;
+        return QLMessageType.ORDER_BOOK_SUBSCRIPTION_REQUEST;
     }
 }

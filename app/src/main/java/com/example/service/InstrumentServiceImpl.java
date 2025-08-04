@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.connector.ConnectorType;
 import com.example.symbology.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +83,13 @@ public final class InstrumentServiceImpl implements InstrumentService {
     public String getInstrumentExchange(Instrument instrument) {
         synchronized (lock) {
             return exchanges.getOrDefault(instrument, "");
+        }
+    }
+
+    @Override
+    public Instrument resolveInstrument(ConnectorSymbolInfo info, ConnectorType connectorType) {
+        synchronized (lock) {
+            return instruments.stream().filter(e -> e.getCode().equals(info.code())).findFirst().orElse(null);
         }
     }
 }

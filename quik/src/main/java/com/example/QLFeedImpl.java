@@ -1,21 +1,25 @@
 package com.example;
 
 import com.example.connector.ConnectorMessageConsumer;
+import com.example.connector.ConnectorType;
 import com.example.connector.SubscriptionResult;
 import com.example.connector.messages.ConnectorMessage;
 import com.example.connector.messages.incoming.InstrumentParams;
+import com.example.connector.messages.incoming.OrderBook;
+import com.example.connector.messages.incoming.OrderBookItem;
 import com.example.connector.messages.incoming.Quote;
-import com.example.messages.QLInstrumentParams;
-import com.example.messages.QLInstrumentParamsSubscriptionRequest;
-import com.example.messages.QLInstrumentParamsUnsubscriptionRequest;
-import com.example.messages.QLMessage;
+import com.example.execution.OrderOperation;
+import com.example.messages.*;
+import com.example.symbology.ConnectorSymbolInfo;
 import com.example.symbology.Instrument;
 import com.example.symbology.InstrumentService;
+import com.example.symbology.Venue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -56,8 +60,8 @@ public class QLFeedImpl implements QLFeed {
         if (!instrumentService.isInstrumentKnown(instrument)) {
             log.debug("Instrument: {} is not known. Won't subscribe.", instrument);
         }
-        //todo orderbook request
-        //adapter.sendMessage(new QLInstrumentParamsSubscriptionRequest(instrument.getCode()));
+
+        adapter.sendMessage(new QLOrderBookSubscriptionRequest(instrument.getCode()));
 
         return SubscriptionResult.OK(instrument);
     }
@@ -65,8 +69,7 @@ public class QLFeedImpl implements QLFeed {
     @Override
     public void unsubscribeOrderBook(Instrument instrument) {
         if (instrumentService.isInstrumentKnown(instrument)) {
-            //todo orderbook request
-            //adapter.sendMessage(new QLInstrumentParamsUnsubscriptionRequest(instrument.getCode()));
+            adapter.sendMessage(new QLOrderBookUnsubscriptionRequest(instrument.getCode()));
         }
     }
 
@@ -74,10 +77,18 @@ public class QLFeedImpl implements QLFeed {
     public void HandleAdapterMessage(QLMessage message) {
         switch (message.getMessageType()) {
             case INSTRUMENT_PARAMS -> Handle((QLInstrumentParams) message);
+            case ORDER_BOOK -> Handle((QLOrderBook) message);
         }
     }
 
     private void Handle(QLInstrumentParams message) {
+        var symbol = new ConnectorSymbolInfo(message.getCode(), Venue.MOEX.getName());
+        var instrument = instrumentService.resolveInstrument(symbol, ConnectorType.QUIK);
+
+        if (instrument == null) {
+            return;
+        }
+
         BigDecimal priceMin = safeParseBigDecimal(message.getPriceMin());
         BigDecimal priceMax = safeParseBigDecimal(message.getPriceMax());
 
@@ -90,6 +101,7 @@ public class QLFeedImpl implements QLFeed {
         var priceStepValue = stepPrices.stream().filter(n -> !n.equals(BigDecimal.ZERO)).findFirst().orElseThrow();
 
         var ip = InstrumentParams.builder()
+                .instrument(instrument)
                 .ask(new Quote(message.getAskPrice(), message.getAskSize()))
                 .bid(new Quote(message.getBidPrice(), message.getBidSize()))
                 .last(new Quote(message.getLastPrice(), 0))
@@ -107,6 +119,41 @@ public class QLFeedImpl implements QLFeed {
                 .build();
 
         raiseMessageReceived(ip);
+    }
+
+
+    private void Handle(QLOrderBook message) {
+        var symbol = new ConnectorSymbolInfo(message.getInstrument(), Venue.MOEX.getName());
+        var instrument = instrumentService.resolveInstrument(symbol, ConnectorType.QUIK);
+
+        if (instrument == null) {
+            return;
+        }
+
+        if (!message.hasBids() && !message.hasOffers()) {
+            log.debug("Empty order book (instrument={}) received, skip.", instrument);
+            return;
+        }
+
+        var obi = new ArrayList<OrderBookItem>();
+        if (message.hasBids()) {
+            for (QLQuote quote : message.getBids()) {
+                obi.add(new OrderBookItem(OrderOperation.BUY, quote.getPrice(), quote.getSize()));
+            }
+        }
+
+        if (message.hasOffers()) {
+            for (QLQuote quote : message.getOffers()) {
+                obi.add(new OrderBookItem(OrderOperation.SELL, quote.getPrice(), quote.getSize()));
+            }
+        }
+
+        var ob = OrderBook.builder()
+                .instrument(instrument)
+                .items(obi)
+                .build();
+
+        raiseMessageReceived(ob);
     }
 
     public static BigDecimal safeParseBigDecimal(String s) {

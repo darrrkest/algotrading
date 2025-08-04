@@ -8,18 +8,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@JsonTypeName("InstrumentParamsSubscriptionRequest")
-public final class QLInstrumentParamsSubscriptionRequest extends QLMessage {
+@JsonTypeName("OrderBookUnsubscriptionRequest")
+public class QLOrderBookUnsubscriptionRequest extends QLMessage {
 
     @JsonProperty("instrument")
     private String instrument;
 
-    public QLInstrumentParamsSubscriptionRequest(String instrument) {
+    public QLOrderBookUnsubscriptionRequest(String instrument) {
         this.instrument = instrument;
     }
 
     @Override
     public QLMessageType getMessageType() {
-        return QLMessageType.INSTRUMENT_PARAMS_SUBSCRIPTION_REQUEST;
+        return QLMessageType.ORDER_BOOK_UNSUBSCRIPTION_REQUEST;
     }
 }

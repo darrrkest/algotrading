@@ -32,6 +32,9 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = QLOrderStateChange.class, name = "OrderStateChange"),
         @JsonSubTypes.Type(value = QLFill.class, name = "Fill"),
         @JsonSubTypes.Type(value = QLTransactionReply.class, name = "TransactionReply"),
+        @JsonSubTypes.Type(value = QLOrderBook.class, name = "OrderBook"),
+        @JsonSubTypes.Type(value = QLOrderBookSubscriptionRequest.class, name = "OrderBookSubscriptionRequest"),
+        @JsonSubTypes.Type(value = QLOrderBookUnsubscriptionRequest.class, name = "OrderBookUnsubscriptionRequest"),
 })
 public abstract class QLMessage {
     @JsonIgnore

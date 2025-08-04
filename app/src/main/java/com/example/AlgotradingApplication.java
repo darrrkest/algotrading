@@ -22,7 +22,7 @@ public class AlgotradingApplication {
         adapter.start();
         var feed = new QLFeedImpl(instrumentService, adapter);
         feed.subscribeParams(new Instrument("SiU5"));
-        feed.subscribeParams(new Instrument("GDU5"));
+        feed.subscribeOrderBook(new Instrument("GDU5"));
         return feed;
     }
 
