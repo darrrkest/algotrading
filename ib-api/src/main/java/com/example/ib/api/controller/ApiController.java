@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import com.example.client.*;
 import com.example.ib.api.client.*;
 import com.example.ib.api.client.Types.BarSize;
 import com.example.ib.api.client.Types.DeepSide;
