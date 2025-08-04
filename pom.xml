@@ -26,6 +26,8 @@
         <module>abstractions</module>
         <module>app</module>
         <module>quik</module>
+        <module>ib-api</module>
+        <module>ib-adapter</module>
     </modules>
 
     <dependencyManagement>
