@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = QLHeartbeat.class, name = "Heartbeat"),
         @JsonSubTypes.Type(value = QLAccountsList.class, name = "AccountsList"),
-        @JsonSubTypes.Type(value = QLEnvelopeAcknowledgment.class, name = "EnvelopeAcknowledgment"),
+        @JsonSubTypes.Type(value = QLEnvelopeAcknowledgment.class, name = "EnvAck"),
         @JsonSubTypes.Type(value = QLInitBegin.class, name = "InitBegin"),
         @JsonSubTypes.Type(value = QLInitEnd.class, name = "InitEnd"),
         @JsonSubTypes.Type(value = QLInstrumentParams.class, name = "InstrumentParams"),
@@ -31,6 +31,7 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = QLPosition.class, name = "Position"),
         @JsonSubTypes.Type(value = QLOrderStateChange.class, name = "OrderStateChange"),
         @JsonSubTypes.Type(value = QLFill.class, name = "Fill"),
+        @JsonSubTypes.Type(value = QLTransactionReply.class, name = "TransactionReply"),
 })
 public abstract class QLMessage {
     @JsonIgnore

@@ -132,29 +132,24 @@ public class QLTransaction extends QLMessage {
 
     //region Factory methods
 
-    public static QLTransaction FromNewOrderTransaction(NewOrderTransaction transaction, long transId)
-    {
-    return builder()
-        .action(QLOrderAction.NEW_ORDER)
-        .account(transaction.getAccount())
-        .clientCode(transaction.getComment())
-        .secCode(transaction.getInstrument().getCode())
-        .classCode(transaction.getAccount())
-        .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
-        .operation(transaction.getOperation() == OrderOperation.BUY ? QLOrderOperation.B : QLOrderOperation.S)
-        .quantity(new DecimalFormat("0.######").format(transaction.getPrice()))
-        .price(transaction.getAccount())
-        .transId(String.valueOf(transId))
-        .type(QLOrderType.L)
-        .expiryDate(QLOrderExpiryDate.fromDate(transaction.getGoodTill()))
-        .build();
+    public static QLTransaction fromNewOrderTransaction(NewOrderTransaction transaction, long transId) {
+        return builder()
+                .action(QLOrderAction.NEW_ORDER)
+                .account(transaction.getAccount())
+                .clientCode(transaction.getComment())
+                .secCode(transaction.getInstrument().getCode())
+                .classCode(getClassCode(transaction.getInstrument()))
+                .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
+                .operation(transaction.getOperation() == OrderOperation.BUY ? QLOrderOperation.B : QLOrderOperation.S)
+                .quantity(String.valueOf(transaction.getSize()))
+                .price(new DecimalFormat("0.######").format(transaction.getPrice()))
+                .transId(String.valueOf(transId))
+                .type(QLOrderType.L)
+                .expiryDate(QLOrderExpiryDate.fromDate(transaction.getGoodTill()))
+                .build();
     }
 
-    /// <summary>
-    /// Возвращает код класса для инструмента. Возможные значения SPBFUT, SPBOPT
-    /// </summary>
-    private static String GetClassCode(Instrument instrument)
-    {
+    private static String getClassCode(Instrument instrument) {
         var classCode = "SPBFUT";
 
         // проверяем, не опцион ли, эвристика по коду инструмента
@@ -162,8 +157,7 @@ public class QLTransaction extends QLMessage {
                 && instrument.getCode() != "USDRUBF" // вечные фьючерсы
                 && instrument.getCode() != "EURRUBF"
                 && instrument.getCode() != "CNYRUBF"
-        )
-        {
+        ) {
             classCode = "SPBOPT";
         }
 

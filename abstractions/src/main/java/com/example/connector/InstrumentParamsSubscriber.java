@@ -3,6 +3,6 @@ package com.example.connector;
 import com.example.symbology.Instrument;
 
 public interface InstrumentParamsSubscriber {
-    SubscriptionResult SubscribeParams(Instrument instrument);
-    void UnsubscribeParams(Instrument instrument);
+    SubscriptionResult subscribeParams(Instrument instrument);
+    void unsubscribeParams(Instrument instrument);
 }

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @JsonTypeName("Position")
@@ -31,5 +33,5 @@ public final class QLPosition extends QLMessage {
     int totalNet;
 
     @JsonProperty("varmargin")
-    double varMargin;
+    BigDecimal varMargin;
 }

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@JsonTypeName("EnvelopeAcknowledgment")
+@JsonTypeName("EnvAck")
 public final class QLEnvelopeAcknowledgment extends QLMessage {
     @JsonProperty("id")
     private int id;

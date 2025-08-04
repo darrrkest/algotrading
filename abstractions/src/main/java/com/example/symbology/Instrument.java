@@ -13,6 +13,10 @@ public class Instrument {
     InstrumentType type;
     LocalDate expiration;
 
+    public Instrument(String code) {
+        this.code = code;
+    }
+
     public Instrument(String root, InstrumentType type, String description,
                       String exchange, LocalDate expiration, String code) {
         this.root = root;

@@ -15,7 +15,7 @@ import lombok.Setter;
 //    }
 //
 //    @JsonProperty("q")
-//    private double price;
+//    private BigDecimal price;
 //
 //    @JsonProperty("q")
 //    private int size;

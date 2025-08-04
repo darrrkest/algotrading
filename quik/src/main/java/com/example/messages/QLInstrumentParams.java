@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -27,31 +29,31 @@ public final class QLInstrumentParams extends QLMessage {
     private String fullCode;
 
     @JsonProperty("bid")
-    private double bidPrice;
+    private BigDecimal bidPrice;
 
     @JsonProperty("bidQuantity")
     private int bidSize;
 
     @JsonProperty("offer")
-    private double askPrice;
+    private BigDecimal askPrice;
 
     @JsonProperty("offerQuantity")
     private int askSize;
 
     @JsonProperty("last")
-    private double lastPrice;
+    private BigDecimal lastPrice;
 
     @JsonProperty("priceStep")
-    private double priceStep;
+    private BigDecimal priceStep;
 
     @JsonProperty("time")
     private String time;
 
     @JsonProperty("strike")
-    private double strike;
+    private BigDecimal strike;
 
     @JsonProperty("volatility")
-    private double volatility;
+    private BigDecimal volatility;
 
     @JsonProperty("lotsize")
     private int lotSize;
@@ -69,29 +71,45 @@ public final class QLInstrumentParams extends QLMessage {
     private String priceMin;
 
     @JsonProperty("settlement")
-    private double settlement;
+    private BigDecimal settlement;
 
     @JsonProperty("openinterest")
     private int openInterest;
 
     @JsonProperty("previousSettlement")
-    private double previousSettlement;
+    private BigDecimal previousSettlement;
 
     @JsonProperty("stepPriceT")
-    private double stepPriceT;
+    private BigDecimal stepPriceT;
 
     @JsonProperty("stepPrice")
-    private double stepPrice;
+    private BigDecimal stepPrice;
 
     @JsonProperty("stepPriceCl")
-    private double stepPriceCl;
+    private BigDecimal stepPriceCl;
 
     @JsonProperty("stepPricePrCl")
-    private double stepPricePrCl;
+    private BigDecimal stepPricePrCl;
 
     @JsonProperty("endTime")
-    private Duration endTime = Duration.ofDays(1);
+    private LocalTime endTime = LocalTime.of(23, 59);
 
     @JsonProperty("expiredate")
     private String expireDate;
+
+    @Override
+    public String toString() {
+        return "QLInstrumentParams{" +
+                "code='" + code + '\'' +
+                ", fullCode='" + fullCode + '\'' +
+                ", bidPrice=" + bidPrice +
+                ", bidSize=" + bidSize +
+                ", askPrice=" + askPrice +
+                ", askSize=" + askSize +
+                ", lastPrice=" + lastPrice +
+                ", priceStep=" + priceStep +
+                ", time='" + time + '\'' +
+                ", expireDate='" + expireDate + '\'' +
+                '}';
+    }
 }

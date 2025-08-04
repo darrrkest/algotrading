@@ -4,6 +4,7 @@ import com.example.symbology.Instrument;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public final class Order {
     String account;
     Instrument instrument;
     OrderOperation operation;
-    double price;
+    BigDecimal price;
     int size;
     OrderType type = OrderType.LIMIT;
     int activeSize;

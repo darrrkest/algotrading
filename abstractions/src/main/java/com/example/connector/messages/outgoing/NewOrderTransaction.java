@@ -8,6 +8,7 @@ import com.example.execution.OrderType;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public final class NewOrderTransaction extends Transaction {
     String comment;
     OrderExecutionCondition executionCondition;
     OrderOperation operation;
-    double price;
+    BigDecimal price;
     int size;
     OrderType type;
     LocalDateTime goodTill;

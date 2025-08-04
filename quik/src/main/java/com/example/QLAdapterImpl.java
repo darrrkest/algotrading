@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.sleep;
 
-public class QLAdapterImpl implements QLAdapter {
+public final class QLAdapterImpl implements QLAdapter {
     private static final int RECEIVE_TIMEOUT_MS = 10;
     private static final int SEND_TIMEOUT_MS = 10;
 
@@ -54,7 +55,7 @@ public class QLAdapterImpl implements QLAdapter {
 
     @Override
     public void sendMessage(QLMessage message) {
-
+        outgoingMessages.add(message);
     }
 
     @Override
@@ -95,6 +96,18 @@ public class QLAdapterImpl implements QLAdapter {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private final List<AdapterMessageConsumer> subs = new CopyOnWriteArrayList<>();
+
+    @Override
+    public void subscribe(AdapterMessageConsumer consumer) {
+        subs.add(consumer);
+    }
+
+    @Override
+    public void unsubscribe(AdapterMessageConsumer consumer) {
+        subs.remove(consumer);
     }
 
     private void runConnect() throws InterruptedException {
@@ -160,12 +173,12 @@ public class QLAdapterImpl implements QLAdapter {
 
                 QLMessage message = outgoingMessages.poll(100, TimeUnit.MILLISECONDS);
                 if (message != null) {
-                    String json = QLSerializer.serialize(message);
+                    String json = QLMapper.serialize(message);
                     writer.write(json);
                     writer.newLine();
                     writer.flush();
                 } else if (System.currentTimeMillis() - lastHeartbeat > 2000) {
-                    writer.write(QLSerializer.heartbeatJson());
+                    writer.write(QLMapper.heartbeatJson());
                     writer.newLine();
                     writer.flush();
                     lastHeartbeat = System.currentTimeMillis();
@@ -187,7 +200,7 @@ public class QLAdapterImpl implements QLAdapter {
                 String json = incomingMessages.poll(RECEIVE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 if (json == null) continue;
 
-                envelope = QLSerializer.deserializeEnvelope(json);
+                envelope = QLMapper.deserializeEnvelope(json);
                 if (envelope.getCount() <= 0) continue;
                 for (QLMessage message : envelope.getBody()) {
                     onMessageReceived(message);
@@ -201,13 +214,16 @@ public class QLAdapterImpl implements QLAdapter {
         }
     }
 
-    private void onMessageReceived(QLMessage msg) {
-
+    private void onMessageReceived(QLMessage message) {
+        log.info(message.toString());
+        for (AdapterMessageConsumer consumer : subs) {
+            consumer.HandleAdapterMessage(message);
+        }
     }
 
     private boolean ensureConnected() {
         //if (socket != null && socket.isConnected()) return true;
-return socket != null && socket.isConnected();
+        return socket != null && socket.isConnected();
     }
 
     private void createSocket() {
