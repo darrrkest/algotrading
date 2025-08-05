@@ -6,7 +6,4 @@ public interface QLAdapter {
     void sendMessage(QLMessage message);
     void start();
     void stop();
-
-    void subscribe(QLAdapterMessageConsumer consumer);
-    void unsubscribe(QLAdapterMessageConsumer consumer);
 }

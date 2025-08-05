@@ -1,6 +1,6 @@
 package com.example.abstractions.connector;
 
-public interface Connector extends FeedMessageConsumer {
+public interface Connector {
     ConnectorType getType();
     ConnectionStatus getConnectionStatus();
     Feed getFeed();

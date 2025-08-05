@@ -1,4 +1,6 @@
 package com.example.quik;
 
-public class QLRouter {
+import com.example.abstractions.connector.OrderRouter;
+
+public interface QLRouter extends OrderRouter {
 }

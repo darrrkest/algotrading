@@ -3,7 +3,8 @@ package com.example;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
 import com.example.quik.QLAdapter;
-import com.example.quik.QLAdapterImpl;
+import com.example.quik.QLConnector;
+import com.example.quik.QLFactory;
 import com.example.quik.QLFeedImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,18 +17,18 @@ public class AlgotradingApplication {
     }
 
     @Bean
-    public QLAdapter qlAdapter() {
-        return new QLAdapterImpl("localhost", 1250);
+    public QLConnector qlConnector(QLFactory qlFactory) {
+        return qlFactory.createConnector();
     }
 
-    @Bean
-    public QLFeedImpl qlFeed(InstrumentService instrumentService, QLAdapter adapter) {
-        adapter.start();
-        var feed = new QLFeedImpl(instrumentService, adapter);
-        feed.subscribeParams(new Instrument("SiU5"));
-        feed.subscribeOrderBook(new Instrument("GDU5"));
-        return feed;
-    }
+    //@Bean
+    //public QLFeedImpl qlFeed(InstrumentService instrumentService, QLAdapter adapter) {
+    //    adapter.start();
+    //    var feed = new QLFeedImpl(instrumentService, adapter);
+    //    feed.subscribeParams(new Instrument("SiU5"));
+    //    feed.subscribeOrderBook(new Instrument("GDU5"));
+    //    return feed;
+    //}
 
     //@EventListener(ApplicationReadyEvent.class)
     //public void init(QLFeedImpl feed) {

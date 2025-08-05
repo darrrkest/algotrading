@@ -1,18 +1,18 @@
 package com.example.quik;
 
 import com.example.abstractions.connector.ConnectionStatus;
+import com.example.abstractions.connector.ConnectionStatusChangedEventArgs;
 import com.example.quik.messages.QLEnvelope;
 import com.example.quik.messages.QLEnvelopeAcknowledgment;
 import com.example.quik.messages.QLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.*;
 import java.net.*;
-import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import static java.lang.Thread.sleep;
 
@@ -32,12 +32,14 @@ public final class QLAdapterImpl implements QLAdapter {
     private BufferedReader reader;
     private BufferedWriter writer;
 
+    private final ApplicationEventPublisher eventPublisher;
     private ExecutorService executor;
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    public QLAdapterImpl(String ipAddress, int port) {
-        this.ip = resolveIp(ipAddress);
+    public QLAdapterImpl(ApplicationEventPublisher eventPublisher, String ip, int port) {
+        this.eventPublisher = eventPublisher;
+        this.ip = resolveIp(ip);
         this.port = port == 0 ? QLConnectorImpl.DEFAULT_PORT : port;
     }
 
@@ -120,18 +122,6 @@ public final class QLAdapterImpl implements QLAdapter {
         }
 
         onStatusChanged();
-    }
-
-    private final List<QLAdapterMessageConsumer> subs = new CopyOnWriteArrayList<>();
-
-    @Override
-    public void subscribe(QLAdapterMessageConsumer consumer) {
-        subs.add(consumer);
-    }
-
-    @Override
-    public void unsubscribe(QLAdapterMessageConsumer consumer) {
-        subs.remove(consumer);
     }
 
     private void runConnect() {
@@ -253,16 +243,12 @@ public final class QLAdapterImpl implements QLAdapter {
 
     private void onMessageReceived(QLMessage message) {
         log.info(message.toString());
-        for (QLAdapterMessageConsumer consumer : subs) {
-            consumer.handleQLMessage(message);
-        }
+        eventPublisher.publishEvent(new QLMessageEventArgs(this, message));
     }
 
     private void onStatusChanged() {
-        //log.info("QLAdapterImpl status changed to: {}", connectionStatus);
-        //for (QLAdapterMessageConsumer consumer : subs) {
-        //    consumer.accept(connectionStatus);
-        //}
+        log.info("QLAdapterImpl status changed to: {}", connectionStatus);
+        eventPublisher.publishEvent(new ConnectionStatusChangedEventArgs(this, connectionStatus));
     }
 
     private boolean ensureConnected() {
@@ -293,31 +279,4 @@ public final class QLAdapterImpl implements QLAdapter {
         socket = null;
         createSocket();
     }
-
-    //region subs
-
-    private final List<Consumer<ConnectionStatus>> connectionStatusListeners = new CopyOnWriteArrayList<>();
-    private final List<Consumer<QLMessage>> messageListeners = new CopyOnWriteArrayList<>();
-
-    public void addConnectionStatusListener(Consumer<ConnectionStatus> listener) {
-        connectionStatusListeners.add(listener);
-    }
-
-    public void addMessageListener(Consumer<QLMessage> listener) {
-        messageListeners.add(listener);
-    }
-
-    private void notifyConnectionStatus(ConnectionStatus status) {
-        for (var listener : connectionStatusListeners) {
-            listener.accept(status);
-        }
-    }
-
-    private void notifyMessage(QLMessage message) {
-        for (var listener : messageListeners) {
-            listener.accept(message);
-        }
-    }
-
-    //endregion
 }

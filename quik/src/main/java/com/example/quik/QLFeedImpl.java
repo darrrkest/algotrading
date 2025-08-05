@@ -14,6 +14,7 @@ import com.example.abstractions.symbology.Venue;
 import com.example.quik.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,8 +32,6 @@ public class QLFeedImpl implements QLFeed {
     public QLFeedImpl(InstrumentService instrumentService, QLAdapter adapter) {
         this.instrumentService = instrumentService;
         this.adapter = adapter;
-
-        //adapter.subscribe(this);
     }
 
     @Override
@@ -71,18 +70,16 @@ public class QLFeedImpl implements QLFeed {
         }
     }
 
-    @Override
-    public void handleQLMessage(QLMessage message) {
+    @EventListener
+    public void onQLMessageEvent(QLMessageEventArgs event) {
+        if (!event.source().equals(this.adapter)) return;
+
+        var message = event.message();
+
         switch (message.getMessageType()) {
             case INSTRUMENT_PARAMS -> Handle((QLInstrumentParams) message);
             case ORDER_BOOK -> Handle((QLOrderBook) message);
         }
-    }
-
-
-    @Override
-    public void handleConnectionStatus(ConnectionStatus status) {
-
     }
 
     private void Handle(QLInstrumentParams message) {
