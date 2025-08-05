@@ -156,7 +156,7 @@ public class EWrapperBase implements EWrapper {
     }
 
     public void execDetailsEnd(int reqId) {
-        log.trace("< execDetailsEnd: {ReqId}", reqId);
+        log.trace("< execDetailsEnd: {}", reqId);
     }
 
     @Override

@@ -1,7 +1,10 @@
 package com.example;
 
-import com.example.symbology.Instrument;
-import com.example.symbology.InstrumentService;
+import com.example.abstractions.symbology.Instrument;
+import com.example.abstractions.symbology.InstrumentService;
+import com.example.quik.QLAdapter;
+import com.example.quik.QLAdapterImpl;
+import com.example.quik.QLFeedImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

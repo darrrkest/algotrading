@@ -1,6 +1,6 @@
 package com.example.config;
 
-import com.example.symbology.InstrumentDefinition;
+import com.example.abstractions.symbology.InstrumentDefinition;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;

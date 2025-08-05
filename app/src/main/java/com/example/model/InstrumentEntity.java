@@ -1,6 +1,6 @@
 package com.example.model;
 
-import com.example.symbology.InstrumentType;
+import com.example.abstractions.symbology.InstrumentType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

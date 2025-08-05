@@ -1,7 +1,7 @@
 package com.example.service;
 
-import com.example.connector.ConnectorType;
-import com.example.symbology.*;
+import com.example.abstractions.connector.ConnectorType;
+import com.example.abstractions.symbology.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

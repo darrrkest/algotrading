@@ -1,20 +1,10 @@
 package com.example.ib.adapter;
 
-import com.example.connector.ConnectorMessageConsumer;
-import com.example.connector.Feed;
-import com.example.connector.SubscriptionResult;
-import com.example.symbology.Instrument;
+import com.example.abstractions.connector.Feed;
+import com.example.abstractions.connector.SubscriptionResult;
+import com.example.abstractions.symbology.Instrument;
 
 public class IBFeed implements Feed {
-    @Override
-    public void addMessageListener(ConnectorMessageConsumer listener) {
-
-    }
-
-    @Override
-    public void removeMessageListener(ConnectorMessageConsumer listener) {
-
-    }
 
     @Override
     public SubscriptionResult subscribeParams(Instrument instrument) {
