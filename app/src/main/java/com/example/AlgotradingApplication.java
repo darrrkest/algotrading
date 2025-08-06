@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.abstractions.connector.Connector;
+import com.example.abstractions.symbology.Instrument;
 import com.example.quik.QLFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,10 +14,11 @@ public class AlgotradingApplication {
     }
 
     @Bean
-    public Connector qlConnector(QLFactory qlFactory) {
-        var t = qlFactory.createConnector();
-        t.start();
-        return t;
+    public Connector qlConnector(QLFactory qlFactory) throws InterruptedException {
+        var connector = qlFactory.createConnector();
+        connector.start();
+        connector.getFeed().subscribeParams(new Instrument("SiU5"));
+        return connector;
     }
 
 

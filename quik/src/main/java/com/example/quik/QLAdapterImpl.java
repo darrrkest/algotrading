@@ -36,7 +36,7 @@ public final class QLAdapterImpl implements QLAdapter {
     private ExecutorService executor;
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
-    private final AtomicBoolean disconnected = new AtomicBoolean(false);
+    private final AtomicBoolean connected = new AtomicBoolean(false);
     private final Semaphore connectedSemaphore = new Semaphore(0);
 
     public QLAdapterImpl(ApplicationEventPublisher eventPublisher, String ip, int port) {
@@ -65,37 +65,20 @@ public final class QLAdapterImpl implements QLAdapter {
 
     @Override
     public void start() {
+        cancelled.set(false);
         synchronized (lock) {
             if (ConnectionStatus.isActive(connectionStatus)) return;
-
             connectionStatus = ConnectionStatus.CONNECTING;
         }
 
         try {
             executor = Executors.newFixedThreadPool(4);
             createSocket();
-            executor.submit(() -> {
-                try {
-                    runConnect();
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            });
-            executor.submit(() -> {
-                try {
-                    runReceive();
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            });
-            executor.submit(() -> {
-                try {
-                    runSend();
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            });
+            executor.submit(this::runReceive);
+            executor.submit(this::runSend);
             executor.submit(this::runDeserialize);
+
+            executor.submit(this::runConnect);
             onConnectionStatusChanged();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -105,22 +88,23 @@ public final class QLAdapterImpl implements QLAdapter {
     @Override
     public void stop() {
         synchronized (lock) {
-            if (ConnectionStatus.isActive(connectionStatus)) return;
+            if (!ConnectionStatus.isActive(connectionStatus)) return;
         }
 
         try {
             cancelled.set(true);
-            try {
-                socket.close();
-                reader.close();
-                socket.close();
-            } catch (IOException ignored) {
-            }
+            connectedSemaphore.drainPermits();
+            if (reader != null) reader.close();
+            if (writer != null) writer.close();
+            if (socket != null) socket.close();
 
             socket = null;
             reader = null;
             writer = null;
             executor.shutdown();
+            if (!executor.awaitTermination(3, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
         } catch (Exception e) {
             log.error("Got error while stopping QLAdapter: {}", e.getMessage());
         }
@@ -129,6 +113,7 @@ public final class QLAdapterImpl implements QLAdapter {
             connectionStatus = ConnectionStatus.DISCONNECTED;
         }
 
+        connected.set(false);
         onConnectionStatusChanged();
     }
 
@@ -137,6 +122,7 @@ public final class QLAdapterImpl implements QLAdapter {
 
         while (!cancelled.get()) {
             try {
+                sleep(1000);
                 createSocket();
 
                 if (socket == null) {
@@ -145,25 +131,28 @@ public final class QLAdapterImpl implements QLAdapter {
                     continue;
                 }
 
-                if (socket.isConnected()) {
-                    try {
-                        connectedSemaphore.acquire();
-                        continue;
-                    } catch (InterruptedException ignored) {
-                        return;
-                    }
+                if (!connected.get()) {
+                    connectionStatus = ConnectionStatus.DISCONNECTED;
+                    recreateSocket();
+                    onConnectionStatusChanged();
+                } else {
+                    continue;
                 }
 
                 log.info("Connecting to QUIK...");
-                socket.connect(new InetSocketAddress(ip, port), 3000);
+                socket.connect(new InetSocketAddress(ip, port));
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "windows-1251"));
                 writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "windows-1251"));
                 log.info("Connected to QUIK");
 
-                disconnected.set(false);
-                connectedSemaphore.release(2);
+                connected.set(true);
                 connectionStatus = ConnectionStatus.CONNECTED;
                 onConnectionStatusChanged();
+
+                // Освобожаем два места под два потока. release(2) может быть превышение
+                while (connectedSemaphore.availablePermits() < 1) {
+                    connectedSemaphore.release();
+                }
 
             } catch (SocketTimeoutException e) {
                 log.info("Socket timed out while connecting to QUIK: {}", e.getMessage());
@@ -175,7 +164,7 @@ public final class QLAdapterImpl implements QLAdapter {
         }
     }
 
-    private void runReceive() throws InterruptedException {
+    private void runReceive() {
         Thread.currentThread().setName("QL_RECEIVE");
 
         while (!cancelled.get()) {
@@ -198,14 +187,14 @@ public final class QLAdapterImpl implements QLAdapter {
         }
     }
 
-    private void runSend() throws InterruptedException {
+    private void runSend() {
         Thread.currentThread().setName("QL_SEND");
 
         long lastHeartbeat = System.currentTimeMillis();
 
         while (!cancelled.get()) {
             try {
-                if (!ensureConnected()) {
+                if (!connected.get()) {
                     sleep(SEND_TIMEOUT_MS);
                     continue;
                 }
@@ -223,6 +212,11 @@ public final class QLAdapterImpl implements QLAdapter {
                     lastHeartbeat = System.currentTimeMillis();
                 }
 
+            } catch (SocketException e) {
+                log.error("Connection lost: {}", e.getMessage(), e);
+                connected.set(false);
+                connectionStatus = ConnectionStatus.DISCONNECTED;
+                onConnectionStatusChanged();
             } catch (Exception e) {
                 log.error("Send error: {}", e.getMessage(), e);
                 sleep(1000);
@@ -264,9 +258,12 @@ public final class QLAdapterImpl implements QLAdapter {
     }
 
     private boolean ensureConnected() {
-        if (socket != null && socket.isConnected()) return true;
+        if (connected.get()) {
+            return true;
+        }
 
-        connectedSemaphore.drainPermits();
+        connected.set(false);
+
         try {
             connectedSemaphore.acquire();
         } catch (InterruptedException e) {
@@ -298,5 +295,12 @@ public final class QLAdapterImpl implements QLAdapter {
 
         socket = null;
         createSocket();
+    }
+
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignored) {
+        }
     }
 }
