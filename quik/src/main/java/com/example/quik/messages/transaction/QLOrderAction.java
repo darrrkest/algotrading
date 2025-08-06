@@ -1,4 +1,4 @@
-package com.example.quik;
+package com.example.quik.messages.transaction;
 
 public enum QLOrderAction
 {

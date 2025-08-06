@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class QLConnectorImpl implements Connector {
     public static int DEFAULT_PORT = 1250;
 
-    private final Logger log = LoggerFactory.getLogger(QLConnectorImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(QLConnectorImpl.class);
 
     private final QLAdapter adapter;
     private final ApplicationEventPublisher eventPublisher;

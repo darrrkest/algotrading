@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class EWrapperBase implements EWrapper {
-    private final Logger log = LoggerFactory.getLogger(IBAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(IBAdapter.class);
 
     public void error(Exception e) {
         log.error("< error {}", e.getMessage());

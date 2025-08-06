@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class QLFeedImpl implements QLFeed {
-    private final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
 
     private final InstrumentService instrumentService;
     private final QLAdapter adapter;

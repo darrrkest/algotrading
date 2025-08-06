@@ -1,6 +1,6 @@
 package com.example.quik.messages;
 
-import com.example.quik.QLOrderAction;
+import com.example.quik.messages.transaction.QLOrderAction;
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.execution.OrderOperation;
 import com.example.abstractions.symbology.Instrument;

@@ -20,7 +20,7 @@ public final class QLAdapterImpl implements QLAdapter {
     private static final int RECEIVE_TIMEOUT_MS = 10;
     private static final int SEND_TIMEOUT_MS = 10;
 
-    private final Logger log = LoggerFactory.getLogger(QLAdapterImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(QLAdapterImpl.class);
     private final Object lock = new Object();
     private final int port;
     private final InetAddress ip;

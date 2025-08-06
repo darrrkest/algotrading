@@ -12,7 +12,7 @@ import java.util.*;
 @Service
 public final class InstrumentServiceImpl implements InstrumentService {
 
-    private final Logger log = LoggerFactory.getLogger(InstrumentServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(InstrumentServiceImpl.class);
     private final Object lock = new Object();
     private Map<Instrument, InstrumentType> types = new HashMap<>();
     private Map<Instrument, String> exchanges = new HashMap<>();
