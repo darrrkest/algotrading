@@ -1,11 +1,7 @@
 package com.example;
 
-import com.example.abstractions.symbology.Instrument;
-import com.example.abstractions.symbology.InstrumentService;
-import com.example.quik.QLAdapter;
-import com.example.quik.QLConnector;
+import com.example.abstractions.connector.Connector;
 import com.example.quik.QLFactory;
-import com.example.quik.QLFeedImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -17,9 +13,12 @@ public class AlgotradingApplication {
     }
 
     @Bean
-    public QLConnector qlConnector(QLFactory qlFactory) {
-        return qlFactory.createConnector();
+    public Connector qlConnector(QLFactory qlFactory) {
+        var t = qlFactory.createConnector();
+        t.start();
+        return t;
     }
+
 
     //@Bean
     //public QLFeedImpl qlFeed(InstrumentService instrumentService, QLAdapter adapter) {

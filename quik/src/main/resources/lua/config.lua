@@ -17,7 +17,7 @@ end
 if ini == nil then
 	config.transport = {}
 	config.transport.receive_orders = true
-	config.transport.port = 1248
+	config.transport.port = 1250
 
 	config.orderRouter = {}
 	config.orderRouter.orderTimeThreshold = 600 -- 10 минут, значение по-умолчанию

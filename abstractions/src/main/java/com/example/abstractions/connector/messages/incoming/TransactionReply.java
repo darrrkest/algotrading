@@ -3,7 +3,7 @@ package com.example.abstractions.connector.messages.incoming;
 import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import lombok.experimental.SuperBuilder;;
 
 import java.util.UUID;
 

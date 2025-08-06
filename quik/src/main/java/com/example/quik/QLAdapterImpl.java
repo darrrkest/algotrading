@@ -36,6 +36,8 @@ public final class QLAdapterImpl implements QLAdapter {
     private ExecutorService executor;
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
+    private final AtomicBoolean disconnected = new AtomicBoolean(false);
+    private final Semaphore connectedSemaphore = new Semaphore(0);
 
     public QLAdapterImpl(ApplicationEventPublisher eventPublisher, String ip, int port) {
         this.eventPublisher = eventPublisher;
@@ -94,7 +96,7 @@ public final class QLAdapterImpl implements QLAdapter {
                 }
             });
             executor.submit(this::runDeserialize);
-            onStatusChanged();
+            onConnectionStatusChanged();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -108,7 +110,13 @@ public final class QLAdapterImpl implements QLAdapter {
 
         try {
             cancelled.set(true);
-            socket.close();
+            try {
+                socket.close();
+                reader.close();
+                socket.close();
+            } catch (IOException ignored) {
+            }
+
             socket = null;
             reader = null;
             writer = null;
@@ -121,7 +129,7 @@ public final class QLAdapterImpl implements QLAdapter {
             connectionStatus = ConnectionStatus.DISCONNECTED;
         }
 
-        onStatusChanged();
+        onConnectionStatusChanged();
     }
 
     private void runConnect() {
@@ -138,20 +146,24 @@ public final class QLAdapterImpl implements QLAdapter {
                 }
 
                 if (socket.isConnected()) {
-                    log.warn("Socket connected for some reason. Recreating socket");
-                    connectionStatus = ConnectionStatus.DISCONNECTING;
-                    recreateSocket();
+                    try {
+                        connectedSemaphore.acquire();
+                        continue;
+                    } catch (InterruptedException ignored) {
+                        return;
+                    }
                 }
 
                 log.info("Connecting to QUIK...");
-                socket = new Socket();
                 socket.connect(new InetSocketAddress(ip, port), 3000);
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "windows-1251"));
                 writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "windows-1251"));
                 log.info("Connected to QUIK");
 
+                disconnected.set(false);
+                connectedSemaphore.release(2);
                 connectionStatus = ConnectionStatus.CONNECTED;
-                onStatusChanged();
+                onConnectionStatusChanged();
 
             } catch (SocketTimeoutException e) {
                 log.info("Socket timed out while connecting to QUIK: {}", e.getMessage());
@@ -246,14 +258,22 @@ public final class QLAdapterImpl implements QLAdapter {
         eventPublisher.publishEvent(new QLMessageEventArgs(this, message));
     }
 
-    private void onStatusChanged() {
+    private void onConnectionStatusChanged() {
         log.info("QLAdapterImpl status changed to: {}", connectionStatus);
         eventPublisher.publishEvent(new ConnectionStatusChangedEventArgs(this, connectionStatus));
     }
 
     private boolean ensureConnected() {
-        //if (socket != null && socket.isConnected()) return true;
-        return socket != null && socket.isConnected();
+        if (socket != null && socket.isConnected()) return true;
+
+        connectedSemaphore.drainPermits();
+        try {
+            connectedSemaphore.acquire();
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return true;
     }
 
     private void createSocket() {

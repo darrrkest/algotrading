@@ -1,10 +1,6 @@
 package com.example.quik;
 
-import com.example.abstractions.connector.ConnectionStatus;
-import com.example.abstractions.connector.ConnectionStatusChangedEventArgs;
-import com.example.abstractions.connector.ConnectorType;
-import com.example.abstractions.connector.Feed;
-import com.example.abstractions.symbology.InstrumentService;
+import com.example.abstractions.connector.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,7 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QLConnectorImpl implements QLConnector {
+public class QLConnectorImpl implements Connector {
     public static int DEFAULT_PORT = 1250;
 
     private final Logger log = LoggerFactory.getLogger(QLConnectorImpl.class);

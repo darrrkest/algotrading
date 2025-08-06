@@ -14,24 +14,25 @@ import com.example.abstractions.symbology.Venue;
 import com.example.quik.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class QLFeedImpl implements QLFeed {
     private final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
 
     private final InstrumentService instrumentService;
     private final QLAdapter adapter;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public QLFeedImpl(InstrumentService instrumentService, QLAdapter adapter) {
+    public QLFeedImpl(InstrumentService instrumentService, QLAdapter adapter, ApplicationEventPublisher eventPublisher) {
         this.instrumentService = instrumentService;
         this.adapter = adapter;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -119,7 +120,7 @@ public class QLFeedImpl implements QLFeed {
                 .lastUpdateTime(LocalDateTime.now())
                 .build();
 
-        raiseMessageReceived(ip);
+        onMessageReceived(ip);
     }
 
 
@@ -154,7 +155,7 @@ public class QLFeedImpl implements QLFeed {
                 .items(obi)
                 .build();
 
-        raiseMessageReceived(ob);
+        onMessageReceived(ob);
     }
 
     public static BigDecimal safeParseBigDecimal(String s) {
@@ -165,12 +166,7 @@ public class QLFeedImpl implements QLFeed {
         }
     }
 
-    private final List<ConnectorMessageConsumer> subs = new CopyOnWriteArrayList<>();
-
-    private void raiseMessageReceived(ConnectorMessage message) {
-        ConnectorMessageEventArgs event = new ConnectorMessageEventArgs(message);
-        for (ConnectorMessageConsumer listener : subs) {
-            listener.accept(event);
-        }
+    private void onMessageReceived(ConnectorMessage message) {
+        eventPublisher.publishEvent(new ConnectorMessageEventArgs(this, message));
     }
 }

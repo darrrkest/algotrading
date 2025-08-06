@@ -1,5 +1,6 @@
 package com.example.quik;
 
+import com.example.abstractions.connector.Connector;
 import com.example.abstractions.symbology.InstrumentService;
 import lombok.Getter;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,7 +13,7 @@ public class QLFactory {
     private final ApplicationEventPublisher eventPublisher;
     private final InstrumentService instrumentService;
 
-    private QLConnector qlConnector;
+    private Connector qlConnector;
     private QLRouter qlRouter;
     private QLFeed qlFeed;
     private QLAdapter qlAdapter;
@@ -22,7 +23,7 @@ public class QLFactory {
         this.instrumentService = instrumentService;
     }
 
-    public QLConnector createConnector() {
+    public Connector createConnector() {
         qlConnector = new QLConnectorImpl(this);
         return qlConnector;
     }
@@ -33,7 +34,7 @@ public class QLFactory {
     }
 
     public QLFeed createFeed() {
-        qlFeed = new QLFeedImpl(instrumentService, qlAdapter);
+        qlFeed = new QLFeedImpl(instrumentService, qlAdapter, eventPublisher);
         return qlFeed;
     }
 
