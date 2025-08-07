@@ -6,13 +6,10 @@ import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.connector.messages.outgoing.Transaction;
 import com.example.abstractions.symbology.InstrumentService;
 import com.example.quik.adapter.QLAdapter;
-import com.example.quik.adapter.QLAdapterMessageEventArgs;
 import com.example.quik.adapter.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,7 +17,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class QLRouterImpl extends OrderRouterBase implements ApplicationListener<QLAdapterMessageEventArgs> {
+public class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     private static final Logger log = LoggerFactory.getLogger(QLRouterImpl.class);
     private final InstrumentService instrumentService;
@@ -90,11 +87,7 @@ public class QLRouterImpl extends OrderRouterBase implements ApplicationListener
     }
 
     @Override
-    public void onApplicationEvent(QLAdapterMessageEventArgs event) {
-        if (!event.getSource().equals(this.adapter)) return;
-
-        var message = event.getMessage();
-
+    public void onMessageReceived(QLMessage message) {
         switch (message.getMessageType()) {
             case TRANSACTION_REPLY -> Handle((QLTransactionReply) message);
             case ORDER_STATE_CHANGE -> Handle((QLOrderStateChange) message);

@@ -12,20 +12,17 @@ import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
 import com.example.abstractions.symbology.Venue;
 import com.example.quik.adapter.QLAdapter;
-import com.example.quik.adapter.QLAdapterMessageEventArgs;
 import com.example.quik.adapter.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class QLFeedImpl extends ConnectorService implements Feed, ApplicationListener<QLAdapterMessageEventArgs> {
+public class QLFeedImpl extends ConnectorService implements QLFeed {
     private static final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
 
     private final InstrumentService instrumentService;
@@ -35,6 +32,8 @@ public class QLFeedImpl extends ConnectorService implements Feed, ApplicationLis
         super(eventPublisher);
         this.instrumentService = instrumentService;
         this.adapter = adapter;
+
+        adapter.addMessageListener(this);
     }
 
     @Override
@@ -74,11 +73,7 @@ public class QLFeedImpl extends ConnectorService implements Feed, ApplicationLis
     }
 
     @Override
-    public void onApplicationEvent(QLAdapterMessageEventArgs event) {
-        if (!event.getSource().equals(this.adapter)) return;
-
-        var message = event.getMessage();
-
+    public void onMessageReceived(QLMessage message) {
         switch (message.getMessageType()) {
             case INSTRUMENT_PARAMS -> Handle((QLInstrumentParams) message);
             case ORDER_BOOK -> Handle((QLOrderBook) message);
@@ -122,7 +117,7 @@ public class QLFeedImpl extends ConnectorService implements Feed, ApplicationLis
                 .lastUpdateTime(LocalDateTime.now())
                 .build();
 
-        onMessageReceived(ip);
+        raiseMessageReceived(this, ip);
     }
 
     private void Handle(QLOrderBook message) {
@@ -156,7 +151,7 @@ public class QLFeedImpl extends ConnectorService implements Feed, ApplicationLis
                 .items(obi)
                 .build();
 
-        onMessageReceived(ob);
+        raiseMessageReceived(this, ob);
     }
 
     public static BigDecimal safeParseBigDecimal(String s) {
@@ -167,7 +162,8 @@ public class QLFeedImpl extends ConnectorService implements Feed, ApplicationLis
         }
     }
 
-    private void onMessageReceived(ConnectorMessage message) {
-        super.onMessageReceived(this, message);
+    @Override
+    public void close() {
+        adapter.removeMessageListener(this);
     }
 }

@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.abstractions.connector.Connector;
+import com.example.quik.QLConnectorFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,6 +16,11 @@ public class AlgotradingApplication {
      *         connector.getFeed().subscribeParams(new Instrument("SiU5"));
      */
 
+    public Connector createConnector(QLConnectorFactory factory) {
+        var t = factory.createConnector("localhost", 1250);
+        t.start();
+        return t;
+    }
 
     //@Bean
     //public QLFeedImpl qlFeed(InstrumentService instrumentService, QLAdapter adapter) {

@@ -1,7 +1,9 @@
 package com.example.quik.adapter;
 
+import com.example.abstractions.connector.Adapter;
+import com.example.abstractions.connector.AdapterMessageListener;
 import com.example.abstractions.connector.ConnectionStatus;
-import com.example.abstractions.connector.ConnectionStatusChangedEventArgs;
+import com.example.abstractions.connector.AdapterConnectionStatusChangeListener;
 import com.example.quik.QLConnectorImpl;
 import com.example.quik.adapter.messages.QLEnvelope;
 import com.example.quik.adapter.messages.QLEnvelopeAcknowledgment;
@@ -9,16 +11,13 @@ import com.example.quik.adapter.messages.QLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.net.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-@Scope("prototype")
 public final class QLAdapterImpl implements QLAdapter {
     private static final int RECEIVE_TIMEOUT_MS = 10;
     private static final int SEND_TIMEOUT_MS = 10;
@@ -35,15 +34,13 @@ public final class QLAdapterImpl implements QLAdapter {
     private BufferedReader reader;
     private BufferedWriter writer;
 
-    private final ApplicationEventPublisher eventPublisher;
     private ExecutorService executor;
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final Semaphore connectedSemaphore = new Semaphore(0);
 
-    public QLAdapterImpl(ApplicationEventPublisher eventPublisher, String ip, int port) {
-        this.eventPublisher = eventPublisher;
+    public QLAdapterImpl(String ip, int port) {
         this.ip = resolveIp(ip);
         this.port = port == 0 ? QLConnectorImpl.DEFAULT_PORT : port;
     }
@@ -118,6 +115,30 @@ public final class QLAdapterImpl implements QLAdapter {
 
         connected.set(false);
         onConnectionStatusChanged();
+    }
+
+    private final List<AdapterMessageListener<QLMessage> > messageListeners = new CopyOnWriteArrayList<>();
+
+    @Override
+    public void addMessageListener(AdapterMessageListener<QLMessage> listener) {
+        messageListeners.add(listener);
+    }
+
+    @Override
+    public void removeMessageListener(AdapterMessageListener<QLMessage> listener) {
+        messageListeners.remove(listener);
+    }
+
+    private final List<AdapterConnectionStatusChangeListener> statusChangeListeners = new CopyOnWriteArrayList<>();
+
+    @Override
+    public void addConnectionStatusListener(AdapterConnectionStatusChangeListener listener) {
+        statusChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeConnectionStatusListener(AdapterConnectionStatusChangeListener listener) {
+        statusChangeListeners.add(listener);
     }
 
     private void runConnect() {
@@ -252,12 +273,12 @@ public final class QLAdapterImpl implements QLAdapter {
 
     private void onMessageReceived(QLMessage message) {
         log.info(message.toString());
-        eventPublisher.publishEvent(new QLAdapterMessageEventArgs(this, message));
+        messageListeners.forEach(l -> l.onMessageReceived(message));
     }
 
     private void onConnectionStatusChanged() {
         log.info("QLAdapterImpl status changed to: {}", connectionStatus);
-        eventPublisher.publishEvent(new ConnectionStatusChangedEventArgs(this, connectionStatus));
+        statusChangeListeners.forEach(l -> l.onConnectionStatusChange(connectionStatus));
     }
 
     private boolean ensureConnected() {
@@ -304,6 +325,18 @@ public final class QLAdapterImpl implements QLAdapter {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ignored) {
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (reader != null) reader.close();
+        if (writer != null) writer.close();
+        if (socket != null) socket.close();
+
+        executor.shutdown();
+        if (!executor.awaitTermination(3, TimeUnit.SECONDS)) {
+            executor.shutdownNow();
         }
     }
 }

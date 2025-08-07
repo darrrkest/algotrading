@@ -1,7 +1,7 @@
 package com.example.service;
 
-import com.example.abstractions.connector.CompositeFeed;
 import com.example.abstractions.connector.Connector;
+import com.example.abstractions.connector.Feed;
 import com.example.abstractions.connector.SubscriptionResult;
 import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.example.abstractions.connector.messages.incoming.*;

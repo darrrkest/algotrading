@@ -5,7 +5,6 @@ import com.example.quik.adapter.QLAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 
 public class QLConnectorImpl implements Connector {
     public static int DEFAULT_PORT = 1250;
@@ -14,16 +13,18 @@ public class QLConnectorImpl implements Connector {
 
     private final QLAdapter adapter;
     private final ApplicationEventPublisher eventPublisher;
-    private final Feed feed;
-    private final OrderRouter router;
+    private final QLFeed feed;
+    private final QLRouter router;
 
     private ConnectionStatus connectionStatus = ConnectionStatus.UNDEFINED;
 
-    public QLConnectorImpl(QLAdapter adapter, Feed feed, OrderRouter router, ApplicationEventPublisher eventPublisher) {
+    public QLConnectorImpl(QLAdapter adapter, QLFeed feed, QLRouter router, ApplicationEventPublisher eventPublisher) {
         this.adapter = adapter;
         this.feed = feed;
         this.router = router;
         this.eventPublisher = eventPublisher;
+
+        adapter.addConnectionStatusListener(this);
     }
 
     @Override
@@ -61,18 +62,20 @@ public class QLConnectorImpl implements Connector {
         }
     }
 
-    @EventListener
-    public void onConnectionStatusChanged(ConnectionStatusChangedEventArgs event) {
-        if (event.source() != this.adapter) {
-            return;
-        }
-        log.info("Connection status of adapter {} changed {} → {}", this, connectionStatus, event.status());
+    @Override
+    public void onConnectionStatusChange(ConnectionStatus status) {
+        log.info("Connection status of adapter {} changed {} → {}", this, connectionStatus, status);
 
-        boolean changed = connectionStatus != event.status();
-        connectionStatus = event.status();
+        boolean changed = connectionStatus != status;
+        connectionStatus = status;
 
         if (changed) {
             eventPublisher.publishEvent(new ConnectionStatusChangedEventArgs(this, connectionStatus));
         }
+    }
+
+    @Override
+    public void close() {
+        adapter.removeConnectionStatusListener(this);
     }
 }

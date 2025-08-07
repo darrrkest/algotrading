@@ -10,7 +10,7 @@ public abstract class ConnectorService {
         this.eventPublisher = eventPublisher;
     }
 
-    protected void onMessageReceived(Object source, ConnectorMessage message) {
+    protected void raiseMessageReceived(Object source, ConnectorMessage message) {
         eventPublisher.publishEvent(new ConnectorMessageEventArgs(source, message));
     }
 }

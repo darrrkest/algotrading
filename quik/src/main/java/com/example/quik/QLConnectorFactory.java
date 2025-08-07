@@ -25,9 +25,9 @@ public class QLConnectorFactory {
     }
 
     public Connector createConnector(String host, int port) {
-        QLAdapter adapter = new QLAdapterImpl(publisher, host, port);
-        Feed feed = new QLFeedImpl(instrumentService, adapter, publisher);
-        OrderRouter router = new QLRouterImpl(instrumentService, adapter, publisher);
+        QLAdapter adapter = new QLAdapterImpl(host, port);
+        QLFeed feed = new QLFeedImpl(instrumentService, adapter, publisher);
+        var router = new QLRouterImpl(instrumentService, adapter, publisher);
         return new QLConnectorImpl(adapter, feed, router, publisher);
     }
 }

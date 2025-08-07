@@ -1,4 +1,4 @@
 package com.example.abstractions.connector;
 
-public interface Feed extends InstrumentParamsConsumer, OrderBookConsumer {
+public interface Feed<L extends AdapterMessage> extends AdapterMessageListener<L>, InstrumentParamsConsumer, OrderBookConsumer, AutoCloseable {
 }
