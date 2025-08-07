@@ -1,13 +1,12 @@
 package com.example.quik;
 
 import com.example.abstractions.connector.*;
+import com.example.quik.adapter.QLAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
-@Component
 public class QLConnectorImpl implements Connector {
     public static int DEFAULT_PORT = 1250;
 
@@ -15,17 +14,16 @@ public class QLConnectorImpl implements Connector {
 
     private final QLAdapter adapter;
     private final ApplicationEventPublisher eventPublisher;
-    private final QLFeed feed;
-    private final QLRouter router;
+    private final Feed feed;
+    private final OrderRouter router;
 
     private ConnectionStatus connectionStatus = ConnectionStatus.UNDEFINED;
 
-    public QLConnectorImpl(QLFactory qlFactory) {
-        this.adapter = qlFactory.createAdapter("localhost", DEFAULT_PORT);
-        this.feed = qlFactory.createFeed();
-        this.router = qlFactory.createRouter();
-
-        this.eventPublisher = qlFactory.getEventPublisher();
+    public QLConnectorImpl(QLAdapter adapter, Feed feed, OrderRouter router, ApplicationEventPublisher eventPublisher) {
+        this.adapter = adapter;
+        this.feed = feed;
+        this.router = router;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override

@@ -9,3 +9,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+
+ql:
+  connections:
+    - name: quik
+      host: localhost
+      port: 1250

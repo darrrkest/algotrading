@@ -4,7 +4,7 @@ import com.example.abstractions.connector.messages.outgoing.Transaction;
 
 import java.util.List;
 
-public interface OrderRouter {
+public interface OrderRouter extends TransactionVisitor {
     List<String> getAvailableAccounts();
 
     // TODO account added

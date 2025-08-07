@@ -4,9 +4,9 @@ import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.execution.Order;
 import com.example.abstractions.execution.OrderState;
-import com.example.quik.messages.QLFill;
-import com.example.quik.messages.QLOrderStateChange;
-import com.example.quik.messages.QLTransactionReply;
+import com.example.quik.adapter.messages.QLFill;
+import com.example.quik.adapter.messages.QLOrderStateChange;
+import com.example.quik.adapter.messages.QLTransactionReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -11,10 +11,13 @@ import com.example.abstractions.symbology.ConnectorSymbolInfo;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
 import com.example.abstractions.symbology.Venue;
-import com.example.quik.messages.*;
+import com.example.quik.adapter.QLAdapter;
+import com.example.quik.adapter.QLAdapterMessageEventArgs;
+import com.example.quik.adapter.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 
 import java.math.BigDecimal;
@@ -22,17 +25,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class QLFeedImpl implements QLFeed {
+public class QLFeedImpl extends ConnectorService implements Feed, ApplicationListener<QLAdapterMessageEventArgs> {
     private static final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
 
     private final InstrumentService instrumentService;
     private final QLAdapter adapter;
-    private final ApplicationEventPublisher eventPublisher;
 
     public QLFeedImpl(InstrumentService instrumentService, QLAdapter adapter, ApplicationEventPublisher eventPublisher) {
+        super(eventPublisher);
         this.instrumentService = instrumentService;
         this.adapter = adapter;
-        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -71,11 +73,11 @@ public class QLFeedImpl implements QLFeed {
         }
     }
 
-    @EventListener
-    public void onQLMessageEvent(QLMessageEventArgs event) {
-        if (!event.source().equals(this.adapter)) return;
+    @Override
+    public void onApplicationEvent(QLAdapterMessageEventArgs event) {
+        if (!event.getSource().equals(this.adapter)) return;
 
-        var message = event.message();
+        var message = event.getMessage();
 
         switch (message.getMessageType()) {
             case INSTRUMENT_PARAMS -> Handle((QLInstrumentParams) message);
@@ -123,7 +125,6 @@ public class QLFeedImpl implements QLFeed {
         onMessageReceived(ip);
     }
 
-
     private void Handle(QLOrderBook message) {
         var symbol = new ConnectorSymbolInfo(message.getInstrument(), Venue.MOEX.getName());
         var instrument = instrumentService.resolveInstrument(symbol, ConnectorType.QUIK);
@@ -167,6 +168,6 @@ public class QLFeedImpl implements QLFeed {
     }
 
     private void onMessageReceived(ConnectorMessage message) {
-        eventPublisher.publishEvent(new ConnectorMessageEventArgs(this, message));
+        super.onMessageReceived(this, message);
     }
 }

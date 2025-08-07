@@ -1,12 +1,18 @@
-/*
 package com.example.abstractions.connector;
 
+import com.example.abstractions.connector.messages.incoming.FillMessage;
+import com.example.abstractions.connector.messages.incoming.MoneyPosition;
+import com.example.abstractions.connector.messages.incoming.PositionMessage;
+import com.example.abstractions.connector.messages.outgoing.Transaction;
 import com.example.abstractions.symbology.Instrument;
+import lombok.Getter;
+import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class OrderRouterBase implements OrderRouter {
+public abstract class OrderRouterBase extends ConnectorService implements OrderRouter {
     private static final int SESSION_UID_LENGTH = 2;
     private static final int COMMENT_LENGTH = 5;
 
@@ -15,21 +21,21 @@ public abstract class OrderRouterBase implements OrderRouter {
     private final Set<String> availableAccounts = ConcurrentHashMap.newKeySet();
     private final Object syncRoot = new Object();
 
+    @Getter
     private final Map<String, Map<Instrument, List<FillMessage>>> fills = new ConcurrentHashMap<>();
+    @Getter
     private final Map<String, Map<Instrument, PositionMessage>> portfolios = new ConcurrentHashMap<>();
+    @Getter
     private final Map<String, MoneyPosition> limits = new ConcurrentHashMap<>();
 
-    private final List<Consumer<String>> accountAddedListeners = new CopyOnWriteArrayList<>();
-
+    @Getter
     private final String sessionUid;
-    private final OrderRouterMode mode;
 
-    protected OrderRouter(boolean storeFillsInMemory,
+    protected OrderRouterBase(ApplicationEventPublisher eventPublisher, boolean storeFillsInMemory,
                           Collection<String> permittedAccounts,
-                          String sessionUid,
-                          OrderRouterMode mode) {
+                          String sessionUid) {
+        super(eventPublisher);
         this.storeFillsInMemory = storeFillsInMemory;
-        this.mode = mode;
         this.sessionUid = (sessionUid != null ? sessionUid : UUID.randomUUID().toString()).substring(0, SESSION_UID_LENGTH);
         this.mapPermittedAccounts = new HashSet<>();
         if (permittedAccounts != null) {
@@ -37,24 +43,8 @@ public abstract class OrderRouterBase implements OrderRouter {
         }
     }
 
-    protected OrderRouter() {
-        this(true, null, null, OrderRouterMode.THIS_SESSION_ONLY);
-    }
-
-    public String getSessionUid() {
-        return sessionUid;
-    }
-
-    public OrderRouterMode getMode() {
-        return mode;
-    }
-
-    public boolean isReceiveExternalOrders() {
-        return mode != OrderRouterMode.THIS_SESSION_ONLY;
-    }
-
-    public boolean isCheckComment() {
-        return mode != OrderRouterMode.EXTERNAL_SESSIONS_RENEWABLE;
+    protected OrderRouterBase(ApplicationEventPublisher eventPublisher) {
+        this(eventPublisher, true, null, null);
     }
 
     public List<String> getAvailableAccounts() {
@@ -63,26 +53,8 @@ public abstract class OrderRouterBase implements OrderRouter {
         }
     }
 
-    public Map<String, Map<IInstrumentTreeNode, List<FillMessage>>> getFills() {
-        return fills;
-    }
-
-    public Map<String, Map<IInstrumentTreeNode, PositionMessage>> getPortfolios() {
-        return portfolios;
-    }
-
-    public Map<String, MoneyPosition> getLimits() {
-        return limits;
-    }
-
-    public void addAccountAddedListener(Consumer<String> listener) {
-        accountAddedListeners.add(listener);
-    }
-
     protected void raiseAccountAdded(String account) {
-        for (var listener : accountAddedListeners) {
-            listener.accept(account);
-        }
+
     }
 
     protected void addAccount(String account) {
@@ -107,20 +79,20 @@ public abstract class OrderRouterBase implements OrderRouter {
             return;
 
         String account = fill.getAccount();
-        boolean gotNewAccount = false;
+        AtomicBoolean gotNewAccount = new AtomicBoolean(false);
 
         synchronized (syncRoot) {
-            Map<IInstrumentTreeNode, List<FillMessage>> accountFills = fills.computeIfAbsent(account, k -> {
-                gotNewAccount = true;
+            Map<Instrument, List<FillMessage>> accountFills = fills.computeIfAbsent(account, k -> {
+                gotNewAccount.set(true);
                 availableAccounts.add(account);
                 return new ConcurrentHashMap<>();
             });
 
-            List<FillMessage> instrumentFills = accountFills.computeIfAbsent(fill.getInstrumentNode(), k -> new ArrayList<>());
+            List<FillMessage> instrumentFills = accountFills.computeIfAbsent(fill.getInstrument(), k -> new ArrayList<>());
             instrumentFills.add(fill);
         }
 
-        if (gotNewAccount) {
+        if (gotNewAccount.get()) {
             raiseAccountAdded(account);
         }
     }
@@ -131,4 +103,3 @@ public abstract class OrderRouterBase implements OrderRouter {
 
     protected abstract void sendTransactionImpl(Transaction transaction);
 }
-*/
