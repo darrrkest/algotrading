@@ -1,9 +1,12 @@
 package com.example;
 
 import com.example.abstractions.connector.Connector;
+import com.example.abstractions.connector.ConnectorMessageEventArgs;
 import com.example.quik.QLConnectorFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
 public class AlgotradingApplication {
@@ -16,9 +19,16 @@ public class AlgotradingApplication {
      *         connector.getFeed().subscribeParams(new Instrument("SiU5"));
      */
 
+    @Bean
     public Connector createConnector(QLConnectorFactory factory) {
         var t = factory.createConnector("localhost", 1250);
         t.start();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+
+        }
+        t.stop();
         return t;
     }
 
@@ -47,4 +57,9 @@ public class AlgotradingApplication {
     //    //t.sendMessage(QLTransaction.fromNewOrderTransaction(newo, 435435123L));
     //    feed.subscribeParams(new Instrument("SiU5"));
     //}
+
+    @EventListener
+    public void onMessage(ConnectorMessageEventArgs event) {
+        System.out.println(event);
+    }
 }

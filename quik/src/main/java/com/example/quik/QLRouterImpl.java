@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -134,5 +135,13 @@ public class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     private void Handle(QLHeartbeat message) {
 
+    }
+
+    @Override
+    public void close() throws Exception {
+        executor.shutdown();
+        if (!executor.awaitTermination(3, TimeUnit.SECONDS)) {
+            executor.shutdownNow();
+        }
     }
 }
