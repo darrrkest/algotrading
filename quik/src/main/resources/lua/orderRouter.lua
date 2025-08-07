@@ -54,30 +54,24 @@ function router:processTransactionReply(transReply)
 end
 
 function router:processOrderStateChange(order)
-	-- —рабатывает при каждом коннекте, когда много за€вок, слишком нагружает логи
-	--trace("info", "ORDER STATE CHANGE: " .. cjson.encode(order))
+	-- ѕреобразуем врем€ за€вки в формат времени Lua
+	local orderTime = os.time({
+		year = order.datetime.year,
+		month = order.datetime.month,
+		day = order.datetime.day,
+		hour = order.datetime.hour,
+		min = order.datetime.min,
+		sec = order.datetime.sec
+	})
 
-	-- ƒл€ событий типа спред обрубаем "давние" событи€ 
-	if order.brokerref and string.find(order.brokerref, "SPREAD") then
-		-- ѕреобразуем врем€ за€вки в формат времени Lua
-		local orderTime = os.time({
-			year = order.datetime.year,
-			month = order.datetime.month,
-			day = order.datetime.day,
-			hour = order.datetime.hour,
-			min = order.datetime.min,
-			sec = order.datetime.sec
-		})
+	-- “екущее серверное врем€
+	local currentTime = context.getCurrentServerTime()
 
-		-- “екущее серверное врем€
-		local currentTime = context.getCurrentServerTime()
-
-		-- ≈сли разница текущего серверного времени и времени за€вки больше, чем предельный интервал из конфига, не обрабатываем
-		if (currentTime - orderTime) > config.orderRouter.orderTimeThreshold then
-			return
-		end
+	-- ≈сли разница текущего серверного времени и времени за€вки больше, чем предельный интервал из конфига, не обрабатываем
+	if (currentTime - orderTime) > config.orderRouter.orderTimeThreshold then
+		return
 	end
-	-- ѕродолжение выполнени€ функции
+
 	order.message_type = transport.messageTypes.OrderStateChange
 	transport:putMessage(order)
 end
@@ -107,25 +101,21 @@ end
 
 -- обработка сделки
 function router:processFill(fill)
-	-- ƒл€ событий типа спред обрубаем "давние" событи€ 
-	if fill.brokerref and string.find(fill.brokerref, "SPREAD") then
+	-- ѕреобразуем врем€ сделки в формат времени Lua
+	local fillTime = os.time({
+		year = fill.datetime.year,
+		month = fill.datetime.month,
+		day = fill.datetime.day,
+		hour = fill.datetime.hour,
+		min = fill.datetime.min,
+		sec = fill.datetime.sec
+	})
 
-		-- ѕреобразуем врем€ сделки в формат времени Lua
-		local fillTime = os.time({
-			year = fill.datetime.year,
-			month = fill.datetime.month,
-			day = fill.datetime.day,
-			hour = fill.datetime.hour,
-			min = fill.datetime.min,
-			sec = fill.datetime.sec
-		})
+	local currentTime = context.getCurrentServerTime()
 
-		local currentTime = context.getCurrentServerTime()
-
-		-- ≈сли разница текущего серверного времени и времени сделки больше, чем предельный интервал из конфига, не обрабатываем
-		if (currentTime - fillTime) > config.orderRouter.orderTimeThreshold then
-			return
-		end
+	-- ≈сли разница текущего серверного времени и времени сделки больше, чем предельный интервал из конфига, не обрабатываем
+	if (currentTime - fillTime) > config.orderRouter.orderTimeThreshold then
+		return
 	end
 
 	fill.message_type = transport.messageTypes.Fill
