@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class QLRouterImpl extends OrderRouterBase implements QLRouter {
+public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     private static final Logger log = LoggerFactory.getLogger(QLRouterImpl.class);
     private final InstrumentService instrumentService;
@@ -122,7 +122,11 @@ public class QLRouterImpl extends OrderRouterBase implements QLRouter {
     }
 
     private void Handle(QLAccountsList message) {
+        log.trace("Handle QLAccountsList: {}", message);
 
+        for (var account : message.getAccounts()) {
+            addAccount(account);
+        }
     }
 
     private void Handle(QLFill message) {

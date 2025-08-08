@@ -1,18 +1,19 @@
 package com.example.quik;
 
 import com.example.abstractions.connector.*;
+import com.example.abstractions.connector.events.ConnectionStatusChangedEvent;
 import com.example.quik.adapter.QLAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
-public class QLConnectorImpl implements Connector {
+public final class QLConnectorImpl implements Connector {
     public static int DEFAULT_PORT = 1250;
 
     private static final Logger log = LoggerFactory.getLogger(QLConnectorImpl.class);
 
-    private final QLAdapter adapter;
     private final ApplicationEventPublisher eventPublisher;
+    private final QLAdapter adapter;
     private final QLFeed feed;
     private final QLRouter router;
 
@@ -43,6 +44,11 @@ public class QLConnectorImpl implements Connector {
     }
 
     @Override
+    public OrderRouter getRouter() {
+        return router;
+    }
+
+    @Override
     public void start() {
         log.info("Starting QL connector");
         adapter.start();
@@ -70,7 +76,7 @@ public class QLConnectorImpl implements Connector {
         connectionStatus = status;
 
         if (changed) {
-            eventPublisher.publishEvent(new ConnectionStatusChangedEventArgs(this, connectionStatus));
+            eventPublisher.publishEvent(new ConnectionStatusChangedEvent(this, connectionStatus));
         }
     }
 

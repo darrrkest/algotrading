@@ -1,7 +1,8 @@
 package com.example;
 
 import com.example.abstractions.connector.Connector;
-import com.example.abstractions.connector.ConnectorMessageEventArgs;
+import com.example.abstractions.connector.events.ConnectorMessageEvent;
+import com.example.abstractions.symbology.Instrument;
 import com.example.quik.QLConnectorFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,22 +15,22 @@ public class AlgotradingApplication {
         SpringApplication.run(AlgotradingApplication.class, args);
     }
 
-    /**
-     *         connector.start();
-     *         connector.getFeed().subscribeParams(new Instrument("SiU5"));
-     */
-
     @Bean
     public Connector createConnector(QLConnectorFactory factory) {
-        var t = factory.createConnector("localhost", 1250);
-        t.start();
+        var connector = factory.createConnector("localhost", 1250);
+        connector.start();
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
 
         }
-        t.stop();
-        return t;
+        connector.getFeed().subscribeParams(new Instrument("SiU5"));
+        return connector;
+    }
+
+    @EventListener
+    public void onConnectorMessageEvent(ConnectorMessageEvent event) {
+        System.out.println(event.getMessage());
     }
 
     //@Bean
@@ -59,7 +60,7 @@ public class AlgotradingApplication {
     //}
 
     @EventListener
-    public void onMessage(ConnectorMessageEventArgs event) {
+    public void onMessage(ConnectorMessageEvent event) {
         System.out.println(event);
     }
 }

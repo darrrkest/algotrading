@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class OrderRouterBase extends ConnectorService  {
+public abstract class OrderRouterBase extends ConnectorService implements OrderRouter  {
     private static final int SESSION_UID_LENGTH = 2;
     private static final int COMMENT_LENGTH = 5;
 

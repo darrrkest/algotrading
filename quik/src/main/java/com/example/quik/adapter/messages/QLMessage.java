@@ -1,6 +1,5 @@
 package com.example.quik.adapter.messages;
 
-import com.example.abstractions.connector.AdapterMessage;
 import com.example.quik.adapter.messages.transaction.QLMessageType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -35,7 +34,7 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = QLOrderBookSubscriptionRequest.class, name = "OrderBookSubscriptionRequest"),
         @JsonSubTypes.Type(value = QLOrderBookUnsubscriptionRequest.class, name = "OrderBookUnsubscriptionRequest"),
 })
-public abstract class QLMessage extends AdapterMessage {
+public abstract class QLMessage {
     @JsonIgnore
     public abstract QLMessageType getMessageType();
 }

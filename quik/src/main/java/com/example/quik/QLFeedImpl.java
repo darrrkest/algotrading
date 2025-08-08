@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class QLFeedImpl extends ConnectorService implements QLFeed {
+public final class QLFeedImpl extends ConnectorService implements QLFeed {
     private static final Logger log = LoggerFactory.getLogger(QLFeedImpl.class);
 
     private final InstrumentService instrumentService;

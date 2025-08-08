@@ -1,16 +1,14 @@
 package com.example.quik.adapter;
 
-import com.example.abstractions.connector.Adapter;
-import com.example.abstractions.connector.AdapterMessageListener;
 import com.example.abstractions.connector.ConnectionStatus;
 import com.example.abstractions.connector.AdapterConnectionStatusChangeListener;
 import com.example.quik.QLConnectorImpl;
+import com.example.quik.QLMessageListener;
 import com.example.quik.adapter.messages.QLEnvelope;
 import com.example.quik.adapter.messages.QLEnvelopeAcknowledgment;
 import com.example.quik.adapter.messages.QLMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.*;
 import java.net.*;
@@ -117,15 +115,15 @@ public final class QLAdapterImpl implements QLAdapter {
         onConnectionStatusChanged();
     }
 
-    private final List<AdapterMessageListener<QLMessage> > messageListeners = new CopyOnWriteArrayList<>();
+    private final List<QLMessageListener> messageListeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void addMessageListener(AdapterMessageListener<QLMessage> listener) {
+    public void addMessageListener(QLMessageListener listener) {
         messageListeners.add(listener);
     }
 
     @Override
-    public void removeMessageListener(AdapterMessageListener<QLMessage> listener) {
+    public void removeMessageListener(QLMessageListener listener) {
         messageListeners.remove(listener);
     }
 

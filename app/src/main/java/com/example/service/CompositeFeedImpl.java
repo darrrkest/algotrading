@@ -96,4 +96,9 @@ public class CompositeFeedImpl implements CompositeFeed {
             connectors.remove(connector);
         }
     }
+
+    @Override
+    public void close() throws Exception {
+
+    }
 }
