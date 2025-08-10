@@ -1,7 +1,7 @@
 package com.example.abstractions.connector.messages.incoming;
 
 import com.example.abstractions.connector.messages.ConnectorMessage;
-import com.example.abstractions.execution.Order;
+import com.example.abstractions.execution.StopOrder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -11,10 +11,10 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @SuperBuilder
-public final class OrderMessage extends ConnectorMessage {
+public class StopOrderMessage extends ConnectorMessage {
     /**
      * Заявка
      */
     @NotNull
-    public Order order;
+    public StopOrder stopOrder;
 }

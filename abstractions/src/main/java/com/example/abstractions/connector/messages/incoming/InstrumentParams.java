@@ -3,7 +3,7 @@ package com.example.abstractions.connector.messages.incoming;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.lang.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,20 +15,27 @@ import java.time.LocalTime;
  */
 @Getter
 @SuperBuilder
-public class InstrumentParams extends InstrumentMessage {
-    private @Nullable Quote bid;
-    private @Nullable Quote ask;
-    private @Nullable Quote last;
+public final class InstrumentParams extends InstrumentMessage {
+    @Nullable
+    private Quote bid;
+
+    @Nullable
+    private Quote ask;
+
+    @Nullable
+    private Quote last;
 
     /**
      * Максимально возможная цена
      */
-    private @NotNull BigDecimal topPriceLimit;
+    @NotNull
+    private BigDecimal topPriceLimit;
 
     /**
      * Минимально возможная цена
      */
-    private @NotNull BigDecimal bottomPriceLimit;
+    @NotNull
+    private BigDecimal bottomPriceLimit;
 
     /**
      * Точность цены
@@ -43,37 +50,44 @@ public class InstrumentParams extends InstrumentMessage {
     /**
      * Шаг цены инструмента
      */
-    private @NotNull BigDecimal priceStep;
+    @NotNull
+    private BigDecimal priceStep;
 
     /**
      * Стоимость шага цены инструмента
      */
-    private @Nullable BigDecimal priceStepValue;
+    @Nullable
+    private BigDecimal priceStepValue;
 
     /**
      * Расчетная цена
      */
-    private @NotNull BigDecimal settlement;
+    @NotNull
+    private BigDecimal settlement;
 
     /**
      * Расчетная цена предыдущего торгового дня
      */
-    private @NotNull BigDecimal previousSettlement;
+    @NotNull
+    private BigDecimal previousSettlement;
 
     /**
      * Теоретическая цена
      */
-    private @NotNull BigDecimal theorPrice;
+    @NotNull
+    private BigDecimal theorPrice;
 
     /**
      * Волатильность опциона
      */
-    private @NotNull BigDecimal IV;
+    @NotNull
+    private BigDecimal IV;
 
     /**
      * Воемя окончания торговой сессии
      */
-    private @NotNull LocalTime sessionEndTime;
+    @NotNull
+    private LocalTime sessionEndTime;
 
     /**
      * Открытый интерес
@@ -83,17 +97,20 @@ public class InstrumentParams extends InstrumentMessage {
     /**
      * Время последнего обновления параметров
      */
-    private @NotNull LocalDateTime lastUpdateTime;
+    @NotNull
+    private LocalDateTime lastUpdateTime;
 
     /**
      * Дата экспирации инструмента
      */
-    private @NotNull LocalDate expireDate;
+    @NotNull
+    private LocalDate expireDate;
 
     /**
      * Номинал инструмента
      * <br>
      * NominalPrice = ( priceStep / priceStepValue) * previousSettlement;
      */
-    private @Nullable BigDecimal nominal;
+    @Nullable
+    private BigDecimal nominal;
 }

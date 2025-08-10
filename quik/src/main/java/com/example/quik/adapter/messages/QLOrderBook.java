@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @JsonTypeName("OrderBook")
-public class QLOrderBook extends QLMessage {
+public final class QLOrderBook extends QLMessage {
     @Override
     public QLMessageType getMessageType() {
         return QLMessageType.ORDER_BOOK;

@@ -5,6 +5,6 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class MoneyPosition extends AccountMessage {
+public final class MoneyPosition extends AccountMessage {
     // TODO Информация о лимитах по деньгам по заданному счету
 }

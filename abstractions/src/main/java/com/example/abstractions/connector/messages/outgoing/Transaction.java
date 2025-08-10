@@ -14,12 +14,15 @@ import java.util.UUID;
  */
 @Getter
 @SuperBuilder
-public abstract class Transaction extends ConnectorMessage {
-    protected @NotNull UUID transactionId;
+public abstract sealed class Transaction extends ConnectorMessage permits KillOrderTransaction, ModifyOrderTransaction, NewOrderTransaction, NewStopOrderTransaction {
+    @NotNull
+    protected UUID transactionId;
 
-    protected @NotNull String account;
+    @NotNull
+    protected String account;
 
-    protected @NotNull Instrument instrument;
+    @NotNull
+    protected Instrument instrument;
 
     public void accept(TransactionMessageVisitor visitor) {
         visitor.visit(this);

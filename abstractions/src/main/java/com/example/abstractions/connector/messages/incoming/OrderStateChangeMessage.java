@@ -13,13 +13,23 @@ import java.util.UUID;
 
 @Getter
 @SuperBuilder
-public class OrderStateChangeMessage extends ConnectorMessage {
-    private @Nullable String orderExchangeId;
-    private @Nullable BigDecimal price;
+public final class OrderStateChangeMessage extends ConnectorMessage {
+
+    @Nullable
+    private String orderExchangeId;
+
+    @Nullable
+    private BigDecimal price;
     private int activeSize;
     private int filledSize;
     private int size;
-    private @Nullable UUID transactionId;
-    private @NotNull OrderState state;
-    private @NotNull LocalDateTime changeTime;
+
+    @Nullable
+    private UUID transactionId;
+
+    @NotNull
+    private OrderState state;
+
+    @NotNull
+    private LocalDateTime changeTime;
 }

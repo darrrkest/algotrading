@@ -13,10 +13,19 @@ import java.time.LocalTime;
  */
 @Getter
 @SuperBuilder
-public class SessionInfo extends ConnectorMessage {
-    private @NotNull LocalTime serverTime;
-    private @NotNull Duration startTime;
-    private @NotNull Duration endTime;
-    private @NotNull Duration eveningStartTime;
-    private @NotNull Duration eveningEndTime;
+public final class SessionInfo extends ConnectorMessage {
+    @NotNull
+    private LocalTime serverTime;
+
+    @NotNull
+    private Duration startTime;
+
+    @NotNull
+    private Duration endTime;
+
+    @NotNull
+    private Duration eveningStartTime;
+
+    @NotNull
+    private Duration eveningEndTime;
 }

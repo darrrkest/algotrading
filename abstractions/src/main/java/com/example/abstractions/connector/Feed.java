@@ -14,7 +14,8 @@ public interface Feed extends AutoCloseable {
      * @param instrument инструмент
      * @return Результат подписки
      */
-    @NotNull SubscriptionResult subscribeParams(@NotNull Instrument instrument);
+    @NotNull
+    SubscriptionResult subscribeParams(@NotNull Instrument instrument);
 
     /**
      * Отписаться от параметров инструмента {@link InstrumentParams}
@@ -27,7 +28,8 @@ public interface Feed extends AutoCloseable {
      * @param instrument инструмент
      * @return Результат подписки
      */
-    @NotNull SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument);
+    @NotNull
+    SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument);
 
     /**
      * Отписаться от стакан по инструменту  {@link OrderBook}

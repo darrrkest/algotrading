@@ -16,11 +16,13 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-public class OrderBookItem {
+public final class OrderBookItem {
 
-    private @NotNull OrderOperation operation;
+    @NotNull
+    private OrderOperation operation;
 
-    private @NotNull BigDecimal price;
+    @NotNull
+    private BigDecimal price;
 
     private long quantity;
 

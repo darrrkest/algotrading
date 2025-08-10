@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonTypeName("OrderBookUnsubscriptionRequest")
-public class QLOrderBookUnsubscriptionRequest extends QLMessage {
+public final class QLOrderBookUnsubscriptionRequest extends QLMessage {
 
     @JsonProperty("instrument")
     private String instrument;

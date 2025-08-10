@@ -20,7 +20,8 @@ public class CompositeFeedImpl implements CompositeFeed {
     private HashSet<Connector> connectors;
 
     @Override
-    public @NotNull SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
+    @NotNull
+    public SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
         return SubscriptionResult.OK(instrument);
     }
 
@@ -30,7 +31,8 @@ public class CompositeFeedImpl implements CompositeFeed {
     }
 
     @Override
-    public @NotNull SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
+    @NotNull
+    public SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
         return SubscriptionResult.OK(instrument);
     }
 

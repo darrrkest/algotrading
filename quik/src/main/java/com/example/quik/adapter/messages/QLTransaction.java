@@ -17,7 +17,7 @@ import java.text.DecimalFormat;
 @Getter
 @Setter
 @JsonTypeName("Transaction")
-public class QLTransaction extends QLMessage {
+public final class QLTransaction extends QLMessage {
     @Override
     public QLMessageType getMessageType() {
         return QLMessageType.TRANSACTION;

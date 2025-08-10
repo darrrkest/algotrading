@@ -14,7 +14,8 @@ public final class ConnectionStatusChangedEvent extends ApplicationEvent {
     /**
      * Статус
      */
-    private @NotNull final ConnectionStatus status;
+    @NotNull
+    private final ConnectionStatus status;
 
     public ConnectionStatusChangedEvent(Object source, @NotNull ConnectionStatus status) {
         super(source);

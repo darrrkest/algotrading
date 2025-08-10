@@ -10,22 +10,26 @@ public interface Connector extends AdapterConnectionStatusChangeListener, AutoCl
     /**
      * Тип коннектора
      */
-    @NotNull ConnectorType getType();
+    @NotNull
+    ConnectorType getType();
 
     /**
      * Текущий статус
      */
-    @NotNull ConnectionStatus getConnectionStatus();
+    @NotNull
+    ConnectionStatus getConnectionStatus();
 
     /**
      * Фид данных
      */
-    @NotNull Feed getFeed();
+    @NotNull
+    Feed getFeed();
 
     /**
      * Получить роутер заявок. Nullable т.к. коннектор не всегда поддерживает размещение заявок
      */
-    @Nullable OrderRouter getRouter();
+    @Nullable
+    OrderRouter getRouter();
 
     /**
      * Запустить

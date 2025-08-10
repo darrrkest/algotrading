@@ -14,7 +14,8 @@ public interface InstrumentService {
     /**
      * Список инструментов с которыми работает система
      */
-    @NotNull List<Instrument> getKnownInstruments();
+    @NotNull
+     List<Instrument> getKnownInstruments();
 
     /**
      * @return true, если инструмент изместен системе
@@ -34,5 +35,6 @@ public interface InstrumentService {
     /**
      * Возвращает инструмент, если он настроен в системе. Иначе null
      */
-    @Nullable Instrument resolveInstrument(@NotNull String symbol, @NotNull ConnectorType connectorType);
+    @Nullable
+    Instrument resolveInstrument(@NotNull String symbol, @NotNull ConnectorType connectorType);
 }

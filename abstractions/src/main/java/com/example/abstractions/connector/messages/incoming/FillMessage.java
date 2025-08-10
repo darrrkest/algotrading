@@ -16,26 +16,34 @@ import java.time.LocalDateTime;
 @Getter
 @SuperBuilder
 public class FillMessage extends AccountMessage {
-    private @NotNull Instrument instrument;
+    @NotNull
+    private Instrument instrument;
 
-    private @NotNull LocalDateTime dateTime;
+    @NotNull
+    private LocalDateTime dateTime;
 
-    private @NotNull OrderOperation operation;
+    @NotNull
+    private OrderOperation operation;
 
-    private @NotNull BigDecimal price;
+    @NotNull
+    private BigDecimal price;
     private int size;
 
     /**
      * Биржевой номер сделки
      */
-    private @NotNull String exchangeId;
+    @NotNull
+    private String exchangeId;
 
     /**
      * Биржевой номер заявки
      */
-    private @NotNull String exchangeOrderId;
+    @NotNull
+    private String exchangeOrderId;
 
-    private @NotNull LiquidityIndicator liquidityIndicator;
+    @NotNull
+    private LiquidityIndicator liquidityIndicator;
 
-    private @Nullable BigDecimal commission;
+    @Nullable
+    private BigDecimal commission;
 }

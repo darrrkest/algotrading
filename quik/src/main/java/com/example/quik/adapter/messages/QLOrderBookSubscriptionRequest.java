@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @JsonTypeName("OrderBookSubscriptionRequest")
-public class QLOrderBookSubscriptionRequest extends QLMessage {
+public final class QLOrderBookSubscriptionRequest extends QLMessage {
 
     @JsonProperty("instrument")
     private String instrument;

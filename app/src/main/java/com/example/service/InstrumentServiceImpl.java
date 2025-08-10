@@ -57,7 +57,8 @@ public final class InstrumentServiceImpl implements InstrumentService {
     }
 
     @Override
-    public @NotNull List<Instrument> getKnownInstruments() {
+    @NotNull
+    public List<Instrument> getKnownInstruments() {
         synchronized (lock) {
             return new ArrayList<>(instruments);
         }

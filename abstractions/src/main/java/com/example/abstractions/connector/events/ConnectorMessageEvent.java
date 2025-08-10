@@ -14,7 +14,8 @@ public final class ConnectorMessageEvent extends ApplicationEvent {
     /**
      * Сообщение
      */
-    private @NotNull final ConnectorMessage message;
+    @NotNull
+    private final ConnectorMessage message;
 
     public ConnectorMessageEvent(Object source, @NotNull ConnectorMessage message) {
         super(source);

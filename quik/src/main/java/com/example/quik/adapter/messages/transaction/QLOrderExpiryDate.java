@@ -3,7 +3,7 @@ package com.example.quik.adapter.messages.transaction;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class QLOrderExpiryDate {
+public final class QLOrderExpiryDate {
     public static final String GTC = "GTC";
     public static final String TODAY = "TODAY";
 

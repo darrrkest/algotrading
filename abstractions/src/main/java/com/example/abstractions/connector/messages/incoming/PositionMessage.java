@@ -14,9 +14,14 @@ import java.math.BigDecimal;
  */
 @Getter
 @SuperBuilder
-public class PositionMessage extends AccountMessage {
-    private @NotNull ConnectorType connectorType;
-    private @NotNull Instrument instrument;
+public final class PositionMessage extends AccountMessage {
+    @NotNull
+    private ConnectorType connectorType;
+
+    @NotNull
+    private Instrument instrument;
     private int quantity;
-    private @Nullable BigDecimal price;
+
+    @Nullable
+    private BigDecimal price;
 }

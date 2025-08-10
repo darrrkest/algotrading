@@ -15,16 +15,18 @@ import java.util.UUID;
  */
 @Getter
 @SuperBuilder
-public class TransactionReply extends ConnectorMessage {
+public final class TransactionReply extends ConnectorMessage {
 
     @JsonProperty("TransactionId")
-    private @NotNull UUID transactionId;
+    @NotNull
+    private UUID transactionId;
 
     @JsonProperty("Success")
     private boolean success;
 
     @JsonProperty("Message")
-    private @Nullable String message;
+    @Nullable
+    private String message;
 
     public static TransactionReply accepted(UUID transactionId) {
         return builder()

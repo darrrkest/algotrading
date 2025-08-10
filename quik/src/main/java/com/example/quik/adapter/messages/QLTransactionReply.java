@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Setter
 @JsonTypeName("TransactionReply")
 @Builder
-public class QLTransactionReply extends QLMessage {
+public final class QLTransactionReply extends QLMessage {
     @Override
     public QLMessageType getMessageType() {
         return QLMessageType.TRANSACTION_REPLY;

@@ -19,13 +19,25 @@ import java.util.UUID;
 @Getter
 @SuperBuilder
 public final class NewOrderTransaction extends Transaction {
-    private @NotNull String comment;
-    private @NotNull OrderExecutionCondition executionCondition;
-    private @NotNull OrderOperation operation;
-    private @NotNull BigDecimal price;
+    @NotNull
+    private String comment;
+
+    @NotNull
+    private OrderExecutionCondition executionCondition;
+
+    @NotNull
+    private OrderOperation operation;
+
+    @NotNull
+    private BigDecimal price;
+
     private int size;
-    private @NotNull OrderType type;
-    private @NotNull LocalDateTime goodTill;
+
+    @NotNull
+    private OrderType type;
+
+    @NotNull
+    private LocalDateTime goodTill;
 
     @Override
     public void accept(TransactionMessageVisitor visitor) {

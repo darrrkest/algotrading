@@ -15,7 +15,8 @@ import java.util.UUID;
 @Getter
 public final class KillOrderTransaction extends Transaction {
 
-    private @NotNull String orderExchangeId;
+    @NotNull
+    private String orderExchangeId;
 
     @Override
     public void accept(TransactionMessageVisitor visitor) {

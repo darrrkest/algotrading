@@ -35,7 +35,8 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     @Override
-    public @NotNull SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
+    @NotNull
+    public SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
         if (!instrumentService.isInstrumentKnown(instrument)) {
             log.debug("Instrument: {} is not known. Won't subscribe.", instrument);
         }
@@ -53,7 +54,8 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     @Override
-    public @NotNull SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
+    @NotNull
+    public SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
         if (!instrumentService.isInstrumentKnown(instrument)) {
             log.debug("Instrument: {} is not known. Won't subscribe.", instrument);
         }

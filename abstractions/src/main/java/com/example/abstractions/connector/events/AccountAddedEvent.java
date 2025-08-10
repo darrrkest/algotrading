@@ -13,7 +13,8 @@ public final class AccountAddedEvent extends ApplicationEvent {
     /**
      * Счет
      */
-    private @NotNull final String account;
+    @NotNull
+    private final String account;
 
     public AccountAddedEvent(Object source, @NotNull String account) {
         super(source);

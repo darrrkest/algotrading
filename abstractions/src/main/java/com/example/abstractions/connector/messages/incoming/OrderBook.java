@@ -15,13 +15,15 @@ import java.util.List;
  */
 @Getter
 @SuperBuilder
-public class OrderBook extends InstrumentMessage {
-    private @NotNull List<OrderBookItem> items;
+public final class OrderBook extends InstrumentMessage {
+    @NotNull
+    private List<OrderBookItem> items;
 
     /**
      * Биды
      */
-    public @Nullable List<OrderBookItem> getBids() {
+    @NotNull
+    public List<OrderBookItem> getBids() {
         return items.stream()
                 .filter(n -> n.getOperation().equals(OrderOperation.BUY))
                 .sorted(Comparator.comparing(OrderBookItem::getPrice))
@@ -31,7 +33,8 @@ public class OrderBook extends InstrumentMessage {
     /**
      * Аски
      */
-    public @Nullable List<OrderBookItem> getAsks() {
+    @NotNull
+    public List<OrderBookItem> getAsks() {
         return items.stream()
                 .filter(n -> n.getOperation().equals(OrderOperation.SELL))
                 .sorted(Comparator.comparing(OrderBookItem::getPrice).reversed())

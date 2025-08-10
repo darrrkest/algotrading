@@ -18,22 +18,26 @@ public final class Order {
     /**
      * Номер счета заявки
      */
-    private @NotNull String account;
+    @NotNull
+    private String account;
 
     /**
      * Информация об инструменте
      */
-    private @NotNull Instrument instrument;
+    @NotNull
+    private Instrument instrument;
 
     /**
      * Операция
      */
-    private @NotNull OrderOperation operation;
+    @NotNull
+    private OrderOperation operation;
 
     /**
      * Цена заявки
      */
-    private @NotNull BigDecimal price;
+    @NotNull
+    private BigDecimal price;
 
     /**
      * Количество контрактов/лотов
@@ -48,37 +52,44 @@ public final class Order {
     /**
      * Тип заявки
      */
-    private @NotNull OrderType type = OrderType.LIMIT;
+    @NotNull
+    private OrderType type = OrderType.LIMIT;
 
     /**
      * Идентификатор заявки, присвоенный биржей
      */
-    private @Nullable String orderExchangeId;
+    @Nullable
+    private String orderExchangeId;
 
     /**
      * Идектификатор транзакции
      */
-    private @NotNull UUID transactionId;
+    @NotNull
+    private UUID transactionId;
 
     /**
      * Состояние заявки
      */
-    private @NotNull OrderState state;
+    @NotNull
+    private OrderState state;
 
     /**
      * Время жизни заявки
      */
-    private @NotNull LocalDateTime goodTill;
+    @NotNull
+    private LocalDateTime goodTill;
 
     /**
      * Дата и время заявки
      */
-    private @NotNull LocalDateTime dateTime;
+    @NotNull
+    private LocalDateTime dateTime;
 
     /**
      * Комментарий
      */
-    private @NotNull String comment;
+    @NotNull
+    private String comment;
 
     @Override
     public String toString() {

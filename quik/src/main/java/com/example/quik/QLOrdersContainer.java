@@ -238,7 +238,8 @@ public class QLOrdersContainer {
         return Optional.ofNullable(value);
     }
 
-    public @Nullable NewOrderTransaction getNewOrderTransaction(long transId, long orderId) {
+    @Nullable
+    public NewOrderTransaction getNewOrderTransaction(long transId, long orderId) {
         synchronized (lock) {
             var value = mapQuikTransIdOnNewOrderTransaction.get(transId);
             if (value == null) {
@@ -248,25 +249,29 @@ public class QLOrdersContainer {
         }
     }
 
-    public @Nullable NewOrderTransaction getNewOrderTransaction(long transId) {
+    @Nullable
+    public NewOrderTransaction getNewOrderTransaction(long transId) {
         synchronized (lock) {
             return mapOrderIdOnNewOrderTransaction.get(transId);
         }
     }
 
-    public @Nullable KillOrderTransaction getKillOrderTransactionByTransId(long transId) {
+    @Nullable
+    public KillOrderTransaction getKillOrderTransactionByTransId(long transId) {
         synchronized (lock) {
             return mapQuikTransIdOnKillOrderTransaction.get(transId);
         }
     }
 
-    public @Nullable KillOrderTransaction getKillOrderTransactionByOrderId(long orderId) {
+    @Nullable
+    public KillOrderTransaction getKillOrderTransactionByOrderId(long orderId) {
         synchronized (lock) {
             return mapOrderIdOnKillOrderTransaction.get(orderId);
         }
     }
 
-    public @Nullable Order getOrder(long orderNum) {
+    @Nullable
+    public Order getOrder(long orderNum) {
         synchronized (lock) {
             return mapOrderIdOnOrder.get(orderNum);
         }

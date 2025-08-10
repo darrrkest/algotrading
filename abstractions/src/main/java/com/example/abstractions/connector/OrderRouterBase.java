@@ -53,7 +53,8 @@ public abstract class OrderRouterBase extends ConnectorService implements OrderR
     }
 
     @Override
-    public @NotNull List<String> getAvailableAccounts() {
+    @NotNull
+    public List<String> getAvailableAccounts() {
         synchronized (syncRoot) {
             return new ArrayList<>(availableAccounts);
         }

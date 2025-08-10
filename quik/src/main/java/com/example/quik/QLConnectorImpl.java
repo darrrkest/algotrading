@@ -31,21 +31,25 @@ public final class QLConnectorImpl implements Connector {
     }
 
     @Override
-    public @NotNull ConnectorType getType() {
+    @NotNull
+    public ConnectorType getType() {
         return ConnectorType.QUIK;
     }
 
     @Override
-    public @NotNull ConnectionStatus getConnectionStatus() {
+    @NotNull
+    public ConnectionStatus getConnectionStatus() {
         return connectionStatus;
     }
 
     @Override
-    public @NotNull Feed getFeed() {
+    @NotNull
+    public Feed getFeed() {
         return feed;
     }
 
     @Override
+    @NotNull
     public OrderRouter getRouter() {
         return router;
     }

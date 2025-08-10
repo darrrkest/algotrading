@@ -6,9 +6,7 @@ import com.example.abstractions.connector.messages.incoming.*;
 import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction;
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.connector.messages.outgoing.Transaction;
-import com.example.abstractions.execution.Order;
-import com.example.abstractions.execution.OrderState;
-import com.example.abstractions.execution.OrderType;
+import com.example.abstractions.execution.*;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
 import com.example.quik.adapter.QLAdapter;
@@ -19,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +34,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
     private final InstrumentService instrumentService;
     private final QLAdapter adapter;
     private final QLOrdersContainer ordersContainer = new QLOrdersContainer();
+    private final QLStopOrdersContainer stopOrdersContainer = new QLStopOrdersContainer();
 
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
     private final AtomicBoolean initialized = new AtomicBoolean(false);
@@ -86,6 +86,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
         switch (message.getMessageType()) {
             case TRANSACTION_REPLY -> handle((QLTransactionReply) message);
             case ORDER_STATE_CHANGE -> handle((QLOrderStateChange) message);
+            case STOP_ORDER_STATE_CHANGE -> handle((QLStopOrderStateChange) message);
             case MONEY_POSITION -> handle((QLMoneyPosition) message);
             case POSITION -> handle((QLPosition) message);
             case ACCOUNTS_LIST -> handle((QLAccountsList) message);
@@ -93,6 +94,25 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             case INIT_END -> handle((QLInitEnd) message);
             case HEARTBEAT -> handle((QLHeartbeat) message);
         }
+    }
+
+    private void handle(QLStopOrderStateChange message) {
+        log.debug("Handle QLStopOrderStateChange: {}", message);
+
+        updateTransId(message.getTransId());
+
+        var instrument = instrumentService.resolveInstrument(message.getSecCode(), ConnectorType.QUIK);
+        if (instrument == null) {
+            log.warn("Cannot resolve instrument: {}", message.getSecCode());
+            return;
+        }
+
+        var transaction = stopOrdersContainer.getTransaction(message.getTransId(), message.getOrderExchangeId());
+
+        raiseMessageReceived(this,
+                StopOrderMessage.builder()
+                        .stopOrder(createStopOrder(instrument, message, transaction))
+                        .build());
     }
 
     private void handle(QLTransactionReply message) {
@@ -504,8 +524,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
         ordersContainer.removeProcessedPendingReply(message);
     }
 
-    /// TODO
-
+    @NotNull
     private static OrderStateChangeMessage createOrderChange(QLOrderStateChange message, UUID transactionId) {
         return OrderStateChangeMessage.builder()
                 .orderExchangeId(String.valueOf(message.getOrderExchangeId()))
@@ -519,6 +538,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                 .build();
     }
 
+    @NotNull
     private static Order createOrder(Instrument instrument, QLOrderStateChange message) {
         return Order.builder()
                 .orderExchangeId(String.valueOf(message.getOrderExchangeId()))
@@ -533,6 +553,61 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                 .operation(message.getOperation())
                 .dateTime(message.getTime())
                 .transactionId(UUID.randomUUID())
+                .build();
+    }
+
+    @NotNull
+    private static StopOrder createStopOrder(Instrument instrument, QLStopOrderStateChange message, Transaction transaction) {
+        StopOrderType type = switch (message.getStopOrderType()) {
+            case SIMPLE_STOP_ORDER -> StopOrderType.STOP_LOSS;
+            case ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER -> StopOrderType.STOP_LOSS_ACTIVATED_BY_LIMIT_ORDER;
+            case TAKE_PROFIT_STOP_ORDER -> StopOrderType.TAKE_PROFIT;
+            case ACTIVATED_BY_ORDER_TAKE_PROFIT_STOP_ORDER -> StopOrderType.TAKE_PROFIT_ACTIVATED_BY_LIMIT_ORDER;
+            case TAKE_PROFIT_AND_STOP_LIMIT_ORDER -> StopOrderType.TAKE_PROFIT_AND_STOP_LOSS;
+            case ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER ->
+                    StopOrderType.TAKE_PROFIT_AND_STOP_LOSS_ACTIVATED_BY_LIMIT_ORDER;
+            default -> throw new IllegalStateException("Unexpected value: " + message.getStopOrderType());
+        };
+
+        BigDecimal stopLossPrice = message.getPrice();
+
+        BigDecimal stopLossTriggerPrice = switch (message.getStopOrderType()) {
+            case SIMPLE_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER -> message.getConditionPrice();
+            case TAKE_PROFIT_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_STOP_ORDER,
+                 TAKE_PROFIT_AND_STOP_LIMIT_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER -> message.getConditionPrice2();
+            default -> throw new IllegalStateException("Unexpected value: " + message.getStopOrderType());
+        };
+
+        BigDecimal takeProfitTriggerPrice = switch (message.getStopOrderType()) {
+            case SIMPLE_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER -> null;
+            case TAKE_PROFIT_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_STOP_ORDER,
+                 TAKE_PROFIT_AND_STOP_LIMIT_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER -> message.getConditionPrice();
+            default -> throw new IllegalStateException("Unexpected value: " + message.getStopOrderType());
+        };
+
+        return StopOrder.builder()
+                .state(message.getState())
+                .account(message.getAccount())
+                .orderExchangeId(String.valueOf(message.getOrderExchangeId()))
+                .instrument(instrument)
+                .operation(message.getOperation())
+                .size(message.getQuantity())
+                .type(type)
+                .stopLossPrice(stopLossPrice)
+                .stopLossTriggerPrice(stopLossTriggerPrice)
+                .slippage(message.getSpread())
+                .takeProfitTriggerPrice(takeProfitTriggerPrice)
+                .takeProfitDeviation(message.getOffset())
+                .activatingOrderId(String.valueOf(message.getCoOrderNum()))
+                .transactionId(transaction != null ? transaction.getTransactionId() : null)
+                .dateTime(message.orderDateTime.toLocalDateTime())
+                .comment(message.getBrokerRef())
                 .build();
     }
 

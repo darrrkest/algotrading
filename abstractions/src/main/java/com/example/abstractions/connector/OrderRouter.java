@@ -13,7 +13,8 @@ public interface OrderRouter extends TransactionMessageVisitor, AutoCloseable {
     /**
      * Список доступных для торговли счетов
      */
-    @NotNull List<String> getAvailableAccounts();
+    @NotNull
+    List<String> getAvailableAccounts();
 
     /**
      * Отправить транзакцию

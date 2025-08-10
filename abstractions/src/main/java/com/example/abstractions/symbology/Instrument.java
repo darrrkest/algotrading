@@ -1,5 +1,6 @@
 package com.example.abstractions.symbology;
 
+import lombok.Builder;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,32 +16,38 @@ public class Instrument {
     /**
      * Код инструмента
      */
-    private final @NotNull String code;
+    @NotNull
+    private final String code;
 
     /**
      * Код биржи, на которой торгуется
      */
-    private @Nullable String exchange;
+    @Nullable
+    private String exchange;
 
     /**
      * Описание инструмента
      */
-    private @Nullable String description;
+    @Nullable
+    private String description;
 
     /**
      * Тип инструмента
      */
-    private @Nullable InstrumentType type;
+    @Nullable
+    private InstrumentType type;
 
     /**
      * Дата экспирации
      */
-    private @Nullable LocalDate expiration;
+    @Nullable
+    private LocalDate expiration;
 
     /**
      * Уникальный символ инструмента
      */
-    public @NotNull String getSymbol() {
+    @NotNull
+    public String getSymbol() {
         return exchange == null ? code : String.format("%s:%s", exchange, code);
     }
 

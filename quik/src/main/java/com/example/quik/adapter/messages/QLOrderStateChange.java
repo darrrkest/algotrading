@@ -22,19 +22,6 @@ public final class QLOrderStateChange extends QLMessage {
         return QLMessageType.ORDER_STATE_CHANGE;
     }
 
-    @JsonIgnore
-    public OrderState getState() {
-        boolean isActive = (flags & QLOrderFlags.Active) != 0;
-        boolean isCancelled = (flags & QLOrderFlags.Cancelled) != 0;
-        if (isActive) return balance == quantity ? OrderState.ACTIVE : OrderState.PARTIALLY_FILLED;
-        return isCancelled ? OrderState.CANCELLED : OrderState.FILLED;
-    }
-
-    @JsonIgnore
-    public OrderOperation getOperation() {
-        return (flags & QLOrderFlags.Sell) != 0 ? OrderOperation.SELL : OrderOperation.BUY;
-    }
-
     @JsonProperty("order_num")
     private long orderExchangeId;
 
@@ -107,5 +94,18 @@ public final class QLOrderStateChange extends QLMessage {
     @JsonIgnore
     public LocalDateTime getTime() {
         return (getState() != OrderState.CANCELLED ? datetime : withdrawDatetime).toLocalDateTime();
+    }
+
+    @JsonIgnore
+    public OrderState getState() {
+        boolean isActive = (flags & QLOrderFlags.ACTIVE.getValue()) != 0;
+        boolean isCancelled = (flags & QLOrderFlags.CANCELLED.getValue()) != 0;
+        if (isActive) return balance == quantity ? OrderState.ACTIVE : OrderState.PARTIALLY_FILLED;
+        return isCancelled ? OrderState.CANCELLED : OrderState.FILLED;
+    }
+
+    @JsonIgnore
+    public OrderOperation getOperation() {
+        return (flags & QLOrderFlags.SELL.getValue()) != 0 ? OrderOperation.SELL : OrderOperation.BUY;
     }
 }
