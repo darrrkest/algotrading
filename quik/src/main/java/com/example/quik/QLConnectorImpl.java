@@ -3,6 +3,8 @@ package com.example.quik;
 import com.example.abstractions.connector.*;
 import com.example.abstractions.connector.events.ConnectionStatusChangedEvent;
 import com.example.quik.adapter.QLAdapter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,17 +31,17 @@ public final class QLConnectorImpl implements Connector {
     }
 
     @Override
-    public ConnectorType getType() {
+    public @NotNull ConnectorType getType() {
         return ConnectorType.QUIK;
     }
 
     @Override
-    public ConnectionStatus getConnectionStatus() {
+    public @NotNull ConnectionStatus getConnectionStatus() {
         return connectionStatus;
     }
 
     @Override
-    public Feed getFeed() {
+    public @NotNull Feed getFeed() {
         return feed;
     }
 
@@ -69,7 +71,7 @@ public final class QLConnectorImpl implements Connector {
     }
 
     @Override
-    public void onConnectionStatusChange(ConnectionStatus status) {
+    public void onConnectionStatusChange(@NotNull ConnectionStatus status) {
         log.info("Connection status of adapter {} changed {} → {}", this, connectionStatus, status);
 
         boolean changed = connectionStatus != status;

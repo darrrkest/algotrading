@@ -7,6 +7,7 @@ import com.example.abstractions.execution.OrderState;
 import com.example.quik.adapter.messages.QLFill;
 import com.example.quik.adapter.messages.QLOrderStateChange;
 import com.example.quik.adapter.messages.QLTransactionReply;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ public class QLOrdersContainer {
     private final Map<Long, List<QLOrderStateChange>> mapOrderIdOnPendingOrderStateChange = new HashMap<>();
     private final Map<Long, NewOrderTransaction> mapOrderIdOnNewOrderTransaction = new HashMap<>();
     private final List<QLTransactionReply> pendingTransactionReplies = new ArrayList<>();
+    private HashSet<Long> processedFills = new HashSet<>();
 
     public void putPendingTransactionReply(QLTransactionReply transactionReply) {
         synchronized (lock) {
@@ -173,6 +175,12 @@ public class QLOrdersContainer {
         }
     }
 
+    public boolean putFill(long fillId) {
+        synchronized (lock) {
+            return processedFills.add(fillId);
+        }
+    }
+
     public List<QLTransactionReply> getPendingTransactionReplies() {
         ArrayList<QLTransactionReply> values;
 
@@ -230,41 +238,37 @@ public class QLOrdersContainer {
         return Optional.ofNullable(value);
     }
 
-    public Optional<NewOrderTransaction> getNewOrderTransaction(long transId, long orderId) {
+    public @Nullable NewOrderTransaction getNewOrderTransaction(long transId, long orderId) {
         synchronized (lock) {
             var value = mapQuikTransIdOnNewOrderTransaction.get(transId);
             if (value == null) {
                 value = mapOrderIdOnNewOrderTransaction.get(orderId);
             }
-            return Optional.ofNullable(value);
+            return value;
         }
     }
 
-    public Optional<NewOrderTransaction> getNewOrderTransaction(long transId) {
+    public @Nullable NewOrderTransaction getNewOrderTransaction(long transId) {
         synchronized (lock) {
-            var value = mapOrderIdOnNewOrderTransaction.get(transId);
-            return Optional.ofNullable(value);
+            return mapOrderIdOnNewOrderTransaction.get(transId);
         }
     }
 
-    public Optional<KillOrderTransaction> getKillOrderTransactionByTransId(long transId) {
+    public @Nullable KillOrderTransaction getKillOrderTransactionByTransId(long transId) {
         synchronized (lock) {
-            var value = mapQuikTransIdOnKillOrderTransaction.get(transId);
-            return Optional.ofNullable(value);
+            return mapQuikTransIdOnKillOrderTransaction.get(transId);
         }
     }
 
-    public Optional<KillOrderTransaction> getKillOrderTransactionByOrderId(long orderId) {
+    public @Nullable KillOrderTransaction getKillOrderTransactionByOrderId(long orderId) {
         synchronized (lock) {
-            var value = mapOrderIdOnKillOrderTransaction.get(orderId);
-            return Optional.ofNullable(value);
+            return mapOrderIdOnKillOrderTransaction.get(orderId);
         }
     }
 
-    public Optional<Order> getOrder(long orderNum) {
+    public @Nullable Order getOrder(long orderNum) {
         synchronized (lock) {
-            var value = mapOrderIdOnOrder.get(orderNum);
-            return Optional.ofNullable(value);
+            return mapOrderIdOnOrder.get(orderNum);
         }
     }
 

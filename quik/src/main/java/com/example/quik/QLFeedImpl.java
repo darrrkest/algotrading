@@ -1,18 +1,16 @@
 package com.example.quik;
 
 import com.example.abstractions.connector.*;
-import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.example.abstractions.connector.messages.incoming.InstrumentParams;
 import com.example.abstractions.connector.messages.incoming.OrderBook;
 import com.example.abstractions.connector.messages.incoming.OrderBookItem;
 import com.example.abstractions.connector.messages.incoming.Quote;
 import com.example.abstractions.execution.OrderOperation;
-import com.example.abstractions.symbology.ConnectorSymbolInfo;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
-import com.example.abstractions.symbology.Venue;
 import com.example.quik.adapter.QLAdapter;
 import com.example.quik.adapter.messages.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,7 +35,7 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     @Override
-    public SubscriptionResult subscribeParams(Instrument instrument) {
+    public @NotNull SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
         if (!instrumentService.isInstrumentKnown(instrument)) {
             log.debug("Instrument: {} is not known. Won't subscribe.", instrument);
         }
@@ -48,14 +46,14 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     @Override
-    public void unsubscribeParams(Instrument instrument) {
+    public void unsubscribeParams(@NotNull Instrument instrument) {
         if (instrumentService.isInstrumentKnown(instrument)) {
             adapter.sendMessage(new QLInstrumentParamsUnsubscriptionRequest(instrument.getCode()));
         }
     }
 
     @Override
-    public SubscriptionResult subscribeOrderBook(Instrument instrument) {
+    public @NotNull SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
         if (!instrumentService.isInstrumentKnown(instrument)) {
             log.debug("Instrument: {} is not known. Won't subscribe.", instrument);
         }
@@ -66,14 +64,14 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     @Override
-    public void unsubscribeOrderBook(Instrument instrument) {
+    public void unsubscribeOrderBook(@NotNull Instrument instrument) {
         if (instrumentService.isInstrumentKnown(instrument)) {
             adapter.sendMessage(new QLOrderBookUnsubscriptionRequest(instrument.getCode()));
         }
     }
 
     @Override
-    public void onMessageReceived(QLMessage message) {
+    public void onMessageReceived(@NotNull QLMessage message) {
         switch (message.getMessageType()) {
             case INSTRUMENT_PARAMS -> Handle((QLInstrumentParams) message);
             case ORDER_BOOK -> Handle((QLOrderBook) message);
@@ -81,10 +79,10 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     private void Handle(QLInstrumentParams message) {
-        var symbol = new ConnectorSymbolInfo(message.getCode(), Venue.MOEX.getName());
-        var instrument = instrumentService.resolveInstrument(symbol, ConnectorType.QUIK);
+        var instrument = instrumentService.resolveInstrument(message.getCode(), ConnectorType.QUIK);
 
         if (instrument == null) {
+            log.warn("Cannot resolve instrument: {}", message.getCode());
             return;
         }
 
@@ -121,10 +119,10 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     private void Handle(QLOrderBook message) {
-        var symbol = new ConnectorSymbolInfo(message.getInstrument(), Venue.MOEX.getName());
-        var instrument = instrumentService.resolveInstrument(symbol, ConnectorType.QUIK);
+        var instrument = instrumentService.resolveInstrument(message.getInstrument(), ConnectorType.QUIK);
 
         if (instrument == null) {
+            log.warn("Cannot resolve instrument: {}", message.getInstrument());
             return;
         }
 

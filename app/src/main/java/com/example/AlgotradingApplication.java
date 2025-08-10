@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.abstractions.connector.Connector;
+import com.example.abstractions.connector.events.AccountAddedEvent;
 import com.example.abstractions.connector.events.ConnectorMessageEvent;
 import com.example.abstractions.symbology.Instrument;
 import com.example.quik.QLConnectorFactory;
@@ -20,17 +21,25 @@ public class AlgotradingApplication {
         var connector = factory.createConnector("localhost", 1250);
         connector.start();
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
 
         }
         connector.getFeed().subscribeParams(new Instrument("SiU5"));
+        var t = connector.getRouter();
+
+        //connector.stop();
         return connector;
     }
 
     @EventListener
     public void onConnectorMessageEvent(ConnectorMessageEvent event) {
         System.out.println(event.getMessage());
+    }
+
+    @EventListener
+    public void onConnectorMessageEvent(AccountAddedEvent event) {
+        System.out.println(event.getAccount());
     }
 
     //@Bean

@@ -4,29 +4,38 @@ import com.example.abstractions.execution.OrderOperation;
 import com.example.abstractions.symbology.Instrument;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Класс собственной(!) сделки
+ */
 @Getter
 @SuperBuilder
 public class FillMessage extends AccountMessage {
-    private Instrument instrument;
+    private @NotNull Instrument instrument;
 
-    private LocalDateTime dateTime;
+    private @NotNull LocalDateTime dateTime;
 
-    private OrderOperation operation;
+    private @NotNull OrderOperation operation;
 
-    private BigDecimal price;
+    private @NotNull BigDecimal price;
     private int size;
+
+    /**
+     * Биржевой номер сделки
+     */
+    private @NotNull String exchangeId;
 
     /**
      * Биржевой номер заявки
      */
-    private String exchangeId;
+    private @NotNull String exchangeOrderId;
 
-    private LiquidityIndicator liquidityIndicator;
+    private @NotNull LiquidityIndicator liquidityIndicator;
 
-    private BigDecimal commission;
-
+    private @Nullable BigDecimal commission;
 }

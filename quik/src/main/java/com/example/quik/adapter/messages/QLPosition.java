@@ -24,7 +24,7 @@ public final class QLPosition extends QLMessage {
     String account;
 
     @JsonProperty("sec_code")
-    String instrument;
+    String secCode;
 
     @JsonProperty("startnet")
     int startNet;

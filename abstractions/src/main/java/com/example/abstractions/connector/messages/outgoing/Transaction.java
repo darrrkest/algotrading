@@ -1,21 +1,27 @@
 package com.example.abstractions.connector.messages.outgoing;
 
-import com.example.abstractions.connector.TransactionVisitor;
+import com.example.abstractions.connector.messages.TransactionMessageVisitor;
 import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.example.abstractions.symbology.Instrument;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
+/**
+ * Сообщение-транзакция
+ */
 @Getter
 @SuperBuilder
 public abstract class Transaction extends ConnectorMessage {
-    UUID transactionId;
+    protected @NotNull UUID transactionId;
 
-    String account;
+    protected @NotNull String account;
 
-    Instrument instrument;
+    protected @NotNull Instrument instrument;
 
-    abstract void Visit(TransactionVisitor visitor);
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
+    }
 }

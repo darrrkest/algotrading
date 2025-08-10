@@ -1,17 +1,22 @@
 package com.example.abstractions.connector;
 
+import com.example.abstractions.connector.events.AccountAddedEvent;
 import com.example.abstractions.connector.messages.incoming.FillMessage;
 import com.example.abstractions.connector.messages.incoming.MoneyPosition;
 import com.example.abstractions.connector.messages.incoming.PositionMessage;
 import com.example.abstractions.connector.messages.outgoing.Transaction;
 import com.example.abstractions.symbology.Instrument;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Базовый класс типичного роутера
+ */
 public abstract class OrderRouterBase extends ConnectorService implements OrderRouter  {
     private static final int SESSION_UID_LENGTH = 2;
     private static final int COMMENT_LENGTH = 5;
@@ -47,16 +52,25 @@ public abstract class OrderRouterBase extends ConnectorService implements OrderR
         this(eventPublisher, true, null, null);
     }
 
-    public List<String> getAvailableAccounts() {
+    @Override
+    public @NotNull List<String> getAvailableAccounts() {
         synchronized (syncRoot) {
             return new ArrayList<>(availableAccounts);
         }
     }
 
-    protected void raiseAccountAdded(String account) {
-
+    /**
+     * Публикует {@link AccountAddedEvent}
+     * @param account добавленный счет
+     */
+    private void raiseAccountAdded(@NotNull String account) {
+        eventPublisher.publishEvent(new AccountAddedEvent(this, account));
     }
 
+    /**
+     * Добавление счета в список доступных
+     * @param account строковое представление счета
+     */
     protected void addAccount(String account) {
         if (account == null || account.isBlank())
             return;
@@ -74,6 +88,10 @@ public abstract class OrderRouterBase extends ConnectorService implements OrderR
         }
     }
 
+    /**
+     * Сохраняют свою сделку
+     * @param fill сделка
+     */
     protected void addFill(FillMessage fill) {
         if (!storeFillsInMemory)
             return;
@@ -97,9 +115,14 @@ public abstract class OrderRouterBase extends ConnectorService implements OrderR
         }
     }
 
-    public void sendTransaction(Transaction transaction) {
+    @Override
+    public void sendTransaction(@NotNull Transaction transaction) {
         sendTransactionImpl(transaction);
     }
 
+    /**
+     * Отправка транзакции на биржу
+     * @param transaction экземпляр транзакция для отправки
+     */
     protected abstract void sendTransactionImpl(Transaction transaction);
 }

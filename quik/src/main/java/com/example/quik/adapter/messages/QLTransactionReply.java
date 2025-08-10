@@ -3,6 +3,7 @@ package com.example.quik.adapter.messages;
 import com.example.quik.adapter.messages.transaction.QLMessageType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @JsonTypeName("TransactionReply")
+@Builder
 public class QLTransactionReply extends QLMessage {
     @Override
     public QLMessageType getMessageType() {
@@ -67,4 +69,8 @@ public class QLTransactionReply extends QLMessage {
 
     @JsonProperty("sec_code")
     private String secCode;
+
+    public boolean isSuccessful() {
+        return status == 0 || status == 1 || status == 3;
+    }
 }

@@ -1,11 +1,13 @@
 package com.example.abstractions.connector.messages;
 
-import com.example.abstractions.connector.ConnectorMessageVisitor;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
+/**
+ * Сообщения, которые выставляют наружу коннекторы
+ */
 @Getter
 @SuperBuilder
 public abstract class ConnectorMessage implements Serializable {

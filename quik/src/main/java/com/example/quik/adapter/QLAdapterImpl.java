@@ -7,6 +7,7 @@ import com.example.quik.QLMessageListener;
 import com.example.quik.adapter.messages.QLEnvelope;
 import com.example.quik.adapter.messages.QLEnvelopeAcknowledgment;
 import com.example.quik.adapter.messages.QLMessage;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public final class QLAdapterImpl implements QLAdapter {
     }
 
     @Override
-    public void sendMessage(QLMessage message) {
+    public void sendMessage(@NotNull QLMessage message) {
         outgoingMessages.add(message);
     }
 
@@ -118,24 +119,24 @@ public final class QLAdapterImpl implements QLAdapter {
     private final List<QLMessageListener> messageListeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void addMessageListener(QLMessageListener listener) {
+    public void addMessageListener(@NotNull QLMessageListener listener) {
         messageListeners.add(listener);
     }
 
     @Override
-    public void removeMessageListener(QLMessageListener listener) {
+    public void removeMessageListener(@NotNull QLMessageListener listener) {
         messageListeners.remove(listener);
     }
 
     private final List<AdapterConnectionStatusChangeListener> statusChangeListeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void addConnectionStatusListener(AdapterConnectionStatusChangeListener listener) {
+    public void addConnectionStatusListener(@NotNull AdapterConnectionStatusChangeListener listener) {
         statusChangeListeners.add(listener);
     }
 
     @Override
-    public void removeConnectionStatusListener(AdapterConnectionStatusChangeListener listener) {
+    public void removeConnectionStatusListener(@NotNull AdapterConnectionStatusChangeListener listener) {
         statusChangeListeners.add(listener);
     }
 
@@ -153,11 +154,7 @@ public final class QLAdapterImpl implements QLAdapter {
                     continue;
                 }
 
-                if (!connected.get()) {
-                    connectionStatus = ConnectionStatus.DISCONNECTED;
-                    recreateSocket();
-                    onConnectionStatusChanged();
-                } else {
+                if (connected.get()) {
                     continue;
                 }
 

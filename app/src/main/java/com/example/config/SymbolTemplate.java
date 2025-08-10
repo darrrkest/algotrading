@@ -1,4 +1,4 @@
-package com.example.abstractions.symbology;
+package com.example.config;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

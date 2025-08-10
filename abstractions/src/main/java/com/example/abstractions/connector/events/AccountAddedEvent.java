@@ -1,14 +1,21 @@
 package com.example.abstractions.connector.events;
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEvent;
 
+/**
+ * Spring-event с добавлением счета
+ */
 @Getter
-public class AccountAddedEvent extends ApplicationEvent {
+public final class AccountAddedEvent extends ApplicationEvent {
 
-    private final String account;
+    /**
+     * Счет
+     */
+    private @NotNull final String account;
 
-    public AccountAddedEvent(Object source, String account) {
+    public AccountAddedEvent(Object source, @NotNull String account) {
         super(source);
         this.account = account;
     }

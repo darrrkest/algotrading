@@ -6,6 +6,7 @@ import com.example.abstractions.connector.SubscriptionResult;
 import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.example.abstractions.connector.messages.incoming.*;
 import com.example.abstractions.symbology.Instrument;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,57 +20,57 @@ public class CompositeFeedImpl implements CompositeFeed {
     private HashSet<Connector> connectors;
 
     @Override
-    public SubscriptionResult subscribeParams(Instrument instrument) {
+    public @NotNull SubscriptionResult subscribeParams(@NotNull Instrument instrument) {
         return SubscriptionResult.OK(instrument);
     }
 
     @Override
-    public void unsubscribeParams(Instrument instrument) {
+    public void unsubscribeParams(@NotNull Instrument instrument) {
 
     }
 
     @Override
-    public SubscriptionResult subscribeOrderBook(Instrument instrument) {
+    public @NotNull SubscriptionResult subscribeOrderBook(@NotNull Instrument instrument) {
         return SubscriptionResult.OK(instrument);
     }
 
     @Override
-    public void unsubscribeOrderBook(Instrument instrument) {
+    public void unsubscribeOrderBook(@NotNull Instrument instrument) {
 
     }
 
     @Override
-    public void visit(TransactionReply message) {
+    public void visit(@NotNull TransactionReply message) {
 
     }
 
     @Override
-    public void visit(FillMessage message) {
+    public void visit(@NotNull FillMessage message) {
 
     }
 
     @Override
-    public void visit(PositionMessage message) {
+    public void visit(@NotNull PositionMessage message) {
 
     }
 
     @Override
-    public void visit(MoneyPosition message) {
+    public void visit(@NotNull MoneyPosition message) {
 
     }
 
     @Override
-    public void visit(InstrumentParams message) {
+    public void visit(@NotNull InstrumentParams message) {
 
     }
 
     @Override
-    public void visit(OrderBook message) {
+    public void visit(@NotNull OrderBook message) {
 
     }
 
     @Override
-    public void visit(ConnectorMessage message) {
+    public void visit(@NotNull ConnectorMessage message) {
 
     }
 

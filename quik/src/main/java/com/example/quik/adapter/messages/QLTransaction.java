@@ -1,5 +1,6 @@
 package com.example.quik.adapter.messages;
 
+import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction;
 import com.example.quik.adapter.messages.transaction.*;
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.execution.OrderOperation;
@@ -145,6 +146,19 @@ public class QLTransaction extends QLMessage {
                 .transId(String.valueOf(transId))
                 .type(QLOrderType.L)
                 .expiryDate(QLOrderExpiryDate.fromDate(transaction.getGoodTill()))
+                .build();
+    }
+
+    public static QLTransaction fromFillOrderTransaction(KillOrderTransaction transaction, long transId) {
+        return builder()
+                .action(QLOrderAction.KILL_ORDER)
+                .account(transaction.getAccount())
+                .clientCode(transaction.getAccount())
+                .secCode(transaction.getInstrument().getCode())
+                .classCode(getClassCode(transaction.getInstrument()))
+                .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
+                .transId(String.valueOf(transId))
+                .orderKey(transaction.getOrderExchangeId())
                 .build();
     }
 

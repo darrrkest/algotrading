@@ -1,20 +1,24 @@
 package com.example.abstractions.connector.messages.outgoing;
 
-import com.example.abstractions.connector.TransactionVisitor;
+import com.example.abstractions.connector.messages.TransactionMessageVisitor;
 import com.example.abstractions.execution.Order;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
+/**
+ * Транзакция на снятие заявки
+ */
 @SuperBuilder
 @Getter
-public class KillOrderTransaction extends Transaction {
+public final class KillOrderTransaction extends Transaction {
 
-    String orderExchangeId;
+    private @NotNull String orderExchangeId;
 
     @Override
-    void Visit(TransactionVisitor visitor) {
+    public void accept(TransactionMessageVisitor visitor) {
         visitor.visit(this);
     }
 
