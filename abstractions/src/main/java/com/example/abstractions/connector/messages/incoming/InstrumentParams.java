@@ -5,7 +5,6 @@ import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,13 +28,13 @@ public final class InstrumentParams extends InstrumentMessage {
      * Максимально возможная цена
      */
     @NotNull
-    private BigDecimal topPriceLimit;
+    private double topPriceLimit;
 
     /**
      * Минимально возможная цена
      */
     @NotNull
-    private BigDecimal bottomPriceLimit;
+    private double bottomPriceLimit;
 
     /**
      * Точность цены
@@ -51,37 +50,37 @@ public final class InstrumentParams extends InstrumentMessage {
      * Шаг цены инструмента
      */
     @NotNull
-    private BigDecimal priceStep;
+    private double priceStep;
 
     /**
      * Стоимость шага цены инструмента
      */
     @Nullable
-    private BigDecimal priceStepValue;
+    private double priceStepValue;
 
     /**
      * Расчетная цена
      */
     @NotNull
-    private BigDecimal settlement;
+    private double settlement;
 
     /**
      * Расчетная цена предыдущего торгового дня
      */
     @NotNull
-    private BigDecimal previousSettlement;
+    private double previousSettlement;
 
     /**
      * Теоретическая цена
      */
     @NotNull
-    private BigDecimal theorPrice;
+    private double theorPrice;
 
     /**
      * Волатильность опциона
      */
     @NotNull
-    private BigDecimal IV;
+    private double IV;
 
     /**
      * Воемя окончания торговой сессии
@@ -112,5 +111,5 @@ public final class InstrumentParams extends InstrumentMessage {
      * NominalPrice = ( priceStep / priceStepValue) * previousSettlement;
      */
     @Nullable
-    private BigDecimal nominal;
+    private double nominal;
 }

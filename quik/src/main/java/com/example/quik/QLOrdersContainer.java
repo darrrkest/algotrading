@@ -1,6 +1,7 @@
 package com.example.quik;
 
 import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction;
+import com.example.abstractions.connector.messages.outgoing.ModifyOrderTransaction;
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.execution.Order;
 import com.example.abstractions.execution.OrderState;
@@ -26,6 +27,7 @@ public class QLOrdersContainer {
     private final Map<Long, LocalDateTime> mapQuikTransIdOnNewOrderTransactionTime = new HashMap<>();
     private final Map<Long, KillOrderTransaction> mapQuikTransIdOnKillOrderTransaction = new HashMap<>();
     private final Map<Long, KillOrderTransaction> mapOrderIdOnKillOrderTransaction = new HashMap<>();
+    private final Map<Long, ModifyOrderTransaction> mapQuikTransIdOnModifyOrderTransaction = new HashMap<>();
     private final Map<Long, List<QLOrderStateChange>> orderStateChanges = new HashMap<>();
     private final Map<Long, Long> mapOriginalOrderIdOnTransferredOrderId = new HashMap<>();
     private final Map<Long, QLFill> pendingFills = new HashMap<>();
@@ -253,6 +255,13 @@ public class QLOrdersContainer {
     public NewOrderTransaction getNewOrderTransaction(long transId) {
         synchronized (lock) {
             return mapOrderIdOnNewOrderTransaction.get(transId);
+        }
+    }
+
+    @Nullable
+    public ModifyOrderTransaction getModifyOrderTransactionByTransId(long transId) {
+        synchronized (lock) {
+            return mapQuikTransIdOnModifyOrderTransaction.get(transId);
         }
     }
 

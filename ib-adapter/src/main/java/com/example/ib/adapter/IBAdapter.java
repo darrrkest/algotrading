@@ -2,7 +2,6 @@ package com.example.ib.adapter;
 
 import com.example.ib.api.client.*;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 public class IBAdapter extends EWrapperBase {

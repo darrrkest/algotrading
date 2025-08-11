@@ -1,5 +1,7 @@
 package com.example.quik.adapter.messages.transaction;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -7,7 +9,7 @@ public final class QLOrderExpiryDate {
     public static final String GTC = "GTC";
     public static final String TODAY = "TODAY";
 
-    public static String fromDate(LocalDateTime date) {
+    public static String fromDate(@Nullable LocalDateTime date) {
         if (date == null) return TODAY;
 
         if (date == LocalDateTime.MAX) return GTC;

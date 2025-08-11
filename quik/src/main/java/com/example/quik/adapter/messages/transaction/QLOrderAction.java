@@ -24,7 +24,7 @@ public enum QLOrderAction
 
      /**
       * Новая стоп-заявка
-     /**
+      */
     NEW_STOP_ORDER,
 
      /**

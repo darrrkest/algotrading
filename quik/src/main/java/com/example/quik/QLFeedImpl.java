@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,8 +87,8 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
             return;
         }
 
-        BigDecimal priceMin = safeParseBigDecimal(message.getPriceMin());
-        BigDecimal priceMax = safeParseBigDecimal(message.getPriceMax());
+        double priceMin = safeParseDouble(message.getPriceMin());
+        double priceMax = safeParseDouble(message.getPriceMax());
 
         var stepPrices = Arrays.asList(
                 message.getStepPrice(),
@@ -97,7 +96,7 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
                 message.getStepPriceCl(),
                 message.getStepPricePrCl());
 
-        var priceStepValue = stepPrices.stream().filter(n -> !n.equals(BigDecimal.ZERO)).findFirst().orElseThrow();
+        var priceStepValue = stepPrices.stream().filter(n -> n != 0).findFirst().orElseThrow();
 
         var ip = InstrumentParams.builder()
                 .instrument(instrument)
@@ -154,11 +153,11 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
         raiseMessageReceived(this, ob);
     }
 
-    public static BigDecimal safeParseBigDecimal(String s) {
+    public static double safeParseDouble(@NotNull String s) {
         try {
-            return new BigDecimal(s);
+            return Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
+            return 0;
         }
     }
 

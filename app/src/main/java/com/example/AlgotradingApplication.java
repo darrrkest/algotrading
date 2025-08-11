@@ -3,12 +3,22 @@ package com.example;
 import com.example.abstractions.connector.Connector;
 import com.example.abstractions.connector.events.AccountAddedEvent;
 import com.example.abstractions.connector.events.ConnectorMessageEvent;
+import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
+import com.example.abstractions.execution.Order;
+import com.example.abstractions.execution.OrderOperation;
+import com.example.abstractions.execution.OrderState;
+import com.example.abstractions.execution.OrderType;
 import com.example.abstractions.symbology.Instrument;
+import com.example.abstractions.symbology.Venue;
 import com.example.quik.QLConnectorFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @SpringBootApplication
 public class AlgotradingApplication {
@@ -25,10 +35,40 @@ public class AlgotradingApplication {
         } catch (InterruptedException e) {
 
         }
-        connector.getFeed().subscribeParams(new Instrument("SiU5"));
+        connector.getFeed().subscribeParams(
+                new Instrument("SiZ5",
+                Venue.MOEX.getName(),
+                LocalDate.of(2025, 12, 18))
+        );
         var t = connector.getRouter();
 
         //connector.stop();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+
+        }
+
+        connector.getRouter().visit(NewOrderTransaction.fromOrder(
+                Order.builder()
+                        .account("SPBFUT000h9")
+                        .instrument(
+                                new Instrument("GDU5",
+                                Venue.MOEX.getName(),
+                                LocalDate.of(2025, 9, 19))
+                        )
+                        .operation(OrderOperation.BUY)
+                        .transactionId(UUID.randomUUID())
+                        .state(OrderState.UNDEFINED)
+                        .type(OrderType.LIMIT)
+                        .dateTime(LocalDateTime.now())
+                        .price(7150)
+                        .size(1)
+                        .comment("comment")
+                        .goodTill(null)
+                        .build()
+        ));
         return connector;
     }
 

@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
-
 /**
  * Котировка из стакана
  */
@@ -21,12 +19,11 @@ public final class OrderBookItem {
     @NotNull
     private OrderOperation operation;
 
-    @NotNull
-    private BigDecimal price;
+    private double price;
 
     private long quantity;
 
-    public OrderBookItem(@NotNull OrderOperation operation,@NotNull BigDecimal price, long quantity) {
+    public OrderBookItem(@NotNull OrderOperation operation, double price, long quantity) {
         this.operation = operation;
         this.price = price;
         this.quantity = quantity;

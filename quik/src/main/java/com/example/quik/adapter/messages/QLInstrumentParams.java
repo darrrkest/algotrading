@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Getter
@@ -28,31 +27,31 @@ public final class QLInstrumentParams extends QLMessage {
     private String fullCode;
 
     @JsonProperty("bid")
-    private BigDecimal bidPrice;
+    private double bidPrice;
 
     @JsonProperty("bidQuantity")
     private int bidSize;
 
     @JsonProperty("offer")
-    private BigDecimal askPrice;
+    private double askPrice;
 
     @JsonProperty("offerQuantity")
     private int askSize;
 
     @JsonProperty("last")
-    private BigDecimal lastPrice;
+    private double lastPrice;
 
     @JsonProperty("priceStep")
-    private BigDecimal priceStep;
+    private double priceStep;
 
     @JsonProperty("time")
     private String time;
 
     @JsonProperty("strike")
-    private BigDecimal strike;
+    private double strike;
 
     @JsonProperty("volatility")
-    private BigDecimal volatility;
+    private double volatility;
 
     @JsonProperty("lotsize")
     private int lotSize;
@@ -70,25 +69,25 @@ public final class QLInstrumentParams extends QLMessage {
     private String priceMin;
 
     @JsonProperty("settlement")
-    private BigDecimal settlement;
+    private double settlement;
 
     @JsonProperty("openinterest")
     private int openInterest;
 
     @JsonProperty("previousSettlement")
-    private BigDecimal previousSettlement;
+    private double previousSettlement;
 
     @JsonProperty("stepPriceT")
-    private BigDecimal stepPriceT;
+    private double stepPriceT;
 
     @JsonProperty("stepPrice")
-    private BigDecimal stepPrice;
+    private double stepPrice;
 
     @JsonProperty("stepPriceCl")
-    private BigDecimal stepPriceCl;
+    private double stepPriceCl;
 
     @JsonProperty("stepPricePrCl")
-    private BigDecimal stepPricePrCl;
+    private double stepPricePrCl;
 
     @JsonProperty("endTime")
     private LocalTime endTime = LocalTime.of(23, 59);

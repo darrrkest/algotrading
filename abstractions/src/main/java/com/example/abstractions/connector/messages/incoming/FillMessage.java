@@ -7,7 +7,6 @@ import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -26,7 +25,7 @@ public class FillMessage extends AccountMessage {
     private OrderOperation operation;
 
     @NotNull
-    private BigDecimal price;
+    private double price;
     private int size;
 
     /**
@@ -45,5 +44,5 @@ public class FillMessage extends AccountMessage {
     private LiquidityIndicator liquidityIndicator;
 
     @Nullable
-    private BigDecimal commission;
+    private double commission;
 }

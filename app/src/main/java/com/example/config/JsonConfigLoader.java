@@ -1,6 +1,7 @@
 package com.example.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class JsonConfigLoader {
     public List<InstrumentDefinition> instrumentDefinitions() {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("instruments.json")) {
             ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
             JsonNode rootNode = mapper.readTree(is);
             JsonNode instrumentsNode = rootNode.get("Instruments");
             return mapper.readerForListOf(InstrumentDefinition.class).readValue(instrumentsNode);

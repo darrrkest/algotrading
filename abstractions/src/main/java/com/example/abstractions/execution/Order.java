@@ -7,89 +7,106 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
 public final class Order {
     /**
      * Номер счета заявки
      */
     @NotNull
-    private String account;
+    private final String account;
 
     /**
      * Информация об инструменте
      */
     @NotNull
-    private Instrument instrument;
+    private final Instrument instrument;
 
     /**
      * Операция
      */
     @NotNull
-    private OrderOperation operation;
+    private final OrderOperation operation;
 
     /**
      * Цена заявки
      */
-    @NotNull
-    private BigDecimal price;
+    private final double price;
 
     /**
      * Количество контрактов/лотов
      */
-    private int size;
+    private final int size;
 
     /**
      * Активное(пока не исполнившееся) количество
      */
+    @Setter
     private int activeSize;
 
     /**
      * Тип заявки
      */
     @NotNull
+    @Setter
     private OrderType type = OrderType.LIMIT;
 
     /**
      * Идентификатор заявки, присвоенный биржей
      */
     @Nullable
+    @Setter
     private String orderExchangeId;
 
     /**
-     * Идектификатор транзакции
+     * Идентификатор транзакции
      */
     @NotNull
+    @Setter
     private UUID transactionId;
 
     /**
      * Состояние заявки
      */
     @NotNull
+    @Setter
     private OrderState state;
 
     /**
      * Время жизни заявки
      */
-    @NotNull
-    private LocalDateTime goodTill;
+    @Nullable
+    @Setter
+    private LocalDateTime goodTill = null;
 
     /**
      * Дата и время заявки
      */
     @NotNull
-    private LocalDateTime dateTime;
+    @Setter
+    private LocalDateTime dateTime = LocalDateTime.now();
 
     /**
      * Комментарий
      */
     @NotNull
+    @Setter
     private String comment;
+
+    public Order(@NotNull String account,
+                 @NotNull Instrument instrument,
+                 @NotNull OrderOperation operation,
+                 double price,
+                 int size) {
+        this.account = account;
+        this.instrument = instrument;
+        this.operation = operation;
+        this.price = price;
+        this.size = size;
+    }
 
     @Override
     public String toString() {

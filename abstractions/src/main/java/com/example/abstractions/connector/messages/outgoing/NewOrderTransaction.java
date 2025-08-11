@@ -8,8 +8,8 @@ import com.example.abstractions.execution.OrderType;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,15 +28,14 @@ public final class NewOrderTransaction extends Transaction {
     @NotNull
     private OrderOperation operation;
 
-    @NotNull
-    private BigDecimal price;
+    private double price;
 
     private int size;
 
     @NotNull
     private OrderType type;
 
-    @NotNull
+    @Nullable
     private LocalDateTime goodTill;
 
     @Override
@@ -44,6 +43,7 @@ public final class NewOrderTransaction extends Transaction {
         visitor.visit(this);
     }
 
+    @NotNull
     public static NewOrderTransaction fromOrder(Order order) {
         return builder()
                 .account(order.getAccount())

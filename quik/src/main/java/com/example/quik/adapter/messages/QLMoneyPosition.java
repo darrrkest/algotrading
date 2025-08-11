@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @JsonTypeName("MoneyPosition")
@@ -25,17 +23,17 @@ public final class QLMoneyPosition extends QLMessage {
     String account;
 
     @JsonProperty("cbplimit")
-    BigDecimal openPositionLimit;
+    double openPositionLimit;
 
     @JsonProperty("cbplused")
-    BigDecimal currentPosition;
+    double currentPosition;
 
     @JsonProperty("cbplplanned")
-    BigDecimal plannedPosition;
+    double plannedPosition;
 
     @JsonProperty("varmargin")
-    BigDecimal varMargin;
+    double varMargin;
 
     @JsonProperty("ts_comission")
-    BigDecimal commission;
+    double commission;
 }

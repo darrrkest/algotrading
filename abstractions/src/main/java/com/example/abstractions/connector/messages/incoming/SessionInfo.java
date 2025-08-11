@@ -4,6 +4,7 @@ import com.example.abstractions.connector.messages.ConnectorMessage;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -17,15 +18,15 @@ public final class SessionInfo extends ConnectorMessage {
     @NotNull
     private LocalTime serverTime;
 
-    @NotNull
+    @Nullable
     private Duration startTime;
 
-    @NotNull
+    @Nullable
     private Duration endTime;
 
-    @NotNull
+    @Nullable
     private Duration eveningStartTime;
 
-    @NotNull
+    @Nullable
     private Duration eveningEndTime;
 }

@@ -3,9 +3,7 @@ package com.example.quik;
 import com.example.abstractions.connector.ConnectorType;
 import com.example.abstractions.connector.OrderRouterBase;
 import com.example.abstractions.connector.messages.incoming.*;
-import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction;
-import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
-import com.example.abstractions.connector.messages.outgoing.Transaction;
+import com.example.abstractions.connector.messages.outgoing.*;
 import com.example.abstractions.execution.*;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
@@ -17,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -426,9 +423,9 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
     private void processSuccessfulTransactionReply(QLTransactionReply message) {
         var newOrderTransaction = ordersContainer.getNewOrderTransaction(message.getTransId());
         var killOrderTransaction = ordersContainer.getKillOrderTransactionByTransId(message.getTransId());
-        // TODO modifyOrderTransaction
+        var modifyOrderTransaction = ordersContainer.getModifyOrderTransactionByTransId(message.getTransId());
 
-        if (newOrderTransaction == null && killOrderTransaction == null) {
+        if (newOrderTransaction == null && killOrderTransaction == null && modifyOrderTransaction == null) {
             log.debug("Transaction reply received for transaction which wasn't sent by us {}", message);
             ordersContainer.removeProcessedPendingReply(message);
             return;
@@ -456,7 +453,12 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             return;
         }
 
-        // TODO modifyOrderTransaction
+        if (modifyOrderTransaction != null &&
+                (lastState == OrderState.NEW || lastState == OrderState.UNDEFINED || lastOscm.get().getTransId() != message.getTransId())) {
+            log.debug("Postpone modify TransactionReply. Last order state is {}", lastState);
+            log.error("Handle TransactionReply: for modify transaction not implemented");
+            ordersContainer.putPendingTransactionReply(message);
+        }
 
         if (killOrderTransaction != null) {
             var unfilledQuantity = parseUnfilledQuantityFromTransactionReply(message);
@@ -477,12 +479,11 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             );
         }
 
-        // TODO modifyOrderTransaction
         var transId = newOrderTransaction != null
                 ? newOrderTransaction.getTransactionId()
                 : killOrderTransaction != null
                     ? killOrderTransaction.getTransactionId()
-                    : null;
+                    : modifyOrderTransaction.getTransactionId();
 
         raiseMessageReceived(
                 this,
@@ -499,7 +500,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
     private void processFailedTransactionReply(QLTransactionReply message) {
         var newOrderTransaction = ordersContainer.getNewOrderTransaction(message.getTransId());
         var killOrderTransaction = ordersContainer.getKillOrderTransactionByTransId(message.getTransId());
-        // TODO modifyOrderTransaction
+        var modifyOrderTransaction = ordersContainer.getModifyOrderTransactionByTransId(message.getTransId());
 
         switch ((int) message.getStatus()) {
             case 13: log.error("Transaction failed due to cross trade"); break;
@@ -510,7 +511,14 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                 ? newOrderTransaction.getTransactionId()
                 : killOrderTransaction != null
                     ? killOrderTransaction.getTransactionId()
-                    : null;
+                    : modifyOrderTransaction != null
+                        ? modifyOrderTransaction.getTransactionId()
+                        : null;
+
+        if (transId == null) {
+            log.error("Can't find transaction associated with message {}", message);
+            return;
+        }
 
         raiseMessageReceived(
                 this,
@@ -540,10 +548,22 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     @NotNull
     private static Order createOrder(Instrument instrument, QLOrderStateChange message) {
-        return Order.builder()
-                .orderExchangeId(String.valueOf(message.getOrderExchangeId()))
-                .instrument(instrument)
-                .account(message.getAccount())
+        var order = new Order(
+                message.getAccount(),
+                instrument,
+                message.getOperation(),
+                message.getPrice(),
+                message.getQuantity()
+        );
+        order.setOrderExchangeId(String.valueOf(message.getOrderExchangeId()));
+        order.setState();
+        order.setActiveSize(message.getBalance());
+        order.setState();
+        order.setState();
+        return
+        Order.builder()
+
+
                 .activeSize(message.getBalance())
                 .size(message.getQuantity())
                 .state(message.getState())
@@ -569,9 +589,9 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             default -> throw new IllegalStateException("Unexpected value: " + message.getStopOrderType());
         };
 
-        BigDecimal stopLossPrice = message.getPrice();
+        var stopLossPrice = message.getPrice();
 
-        BigDecimal stopLossTriggerPrice = switch (message.getStopOrderType()) {
+        var stopLossTriggerPrice = switch (message.getStopOrderType()) {
             case SIMPLE_STOP_ORDER,
                  ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER -> message.getConditionPrice();
             case TAKE_PROFIT_STOP_ORDER,
@@ -581,7 +601,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             default -> throw new IllegalStateException("Unexpected value: " + message.getStopOrderType());
         };
 
-        BigDecimal takeProfitTriggerPrice = switch (message.getStopOrderType()) {
+        var takeProfitTriggerPrice = switch (message.getStopOrderType()) {
             case SIMPLE_STOP_ORDER,
                  ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER -> null;
             case TAKE_PROFIT_STOP_ORDER,
@@ -697,14 +717,29 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
     }
 
     @Override
+    public void visit(@NotNull ModifyOrderTransaction transaction) {
+        log.debug("visit ModifyOrderTransaction");
+    }
+
+    @Override
     public void visit(@NotNull KillOrderTransaction transaction) {
         var newOrderTransactionId = incTransId();
-
-        var trans = QLTransaction.fromFillOrderTransaction(transaction, newOrderTransactionId);
+        var trans = QLTransaction.fromKillOrderTransaction(transaction, newOrderTransactionId);
 
         log.debug("visit KillOrderTransaction {}", trans);
 
         ordersContainer.putTransaction(newOrderTransactionId, transaction);
+        adapter.sendMessage(trans);
+    }
+
+    @Override
+    public void visit(@NotNull NewStopOrderTransaction transaction) {
+        var newStopOrderTransactionId = incTransId();
+        var trans = QLTransaction.fromNewStopOrderTransaction(transaction, newStopOrderTransactionId);
+
+        log.debug("visit NewStopOrderTransaction {}", trans);
+
+        stopOrdersContainer.putTransaction(newStopOrderTransactionId, transaction);
         adapter.sendMessage(trans);
     }
 

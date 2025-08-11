@@ -8,7 +8,6 @@ import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,7 +26,7 @@ public final class NewStopOrderTransaction extends Transaction {
     private int size;
 
     /**
-     * Операция стоп заяки
+     * Операция стоп заявки
      */
     @NotNull
     private OrderOperation operation;
@@ -36,25 +35,25 @@ public final class NewStopOrderTransaction extends Transaction {
      * Цена, при которой срабатывает стоп заявка
      */
     @Nullable
-    private BigDecimal stopLossPrice;
+    private Double stopLossPrice;
 
     /**
      * Проскальзывание. Как для СЛ, так и ТП
      */
     @Nullable
-    private BigDecimal slippage;
+    private Double slippage;
 
     /**
      * Цена, при которой активируется тейк профит и начинается расчет
      */
     @Nullable
-    private BigDecimal takeProfitPrice;
+    private Double takeProfitPrice;
 
     /**
-     * Отконение от экстремума, при котором сработает тейкк профит
+     * Отклонение от экстремума, при котором сработает тейк профит
      */
     @Nullable
-    private BigDecimal takeProfitDeviation;
+    private Double takeProfitDeviation;
 
     /**
      * Биржевой ID заявки, при исполнении которой активируется сто заявка

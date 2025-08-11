@@ -1,6 +1,7 @@
 package com.example.quik.adapter.messages;
 
 import com.example.abstractions.connector.messages.outgoing.KillOrderTransaction;
+import com.example.abstractions.connector.messages.outgoing.NewStopOrderTransaction;
 import com.example.quik.adapter.messages.transaction.*;
 import com.example.abstractions.connector.messages.outgoing.NewOrderTransaction;
 import com.example.abstractions.execution.OrderOperation;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 
@@ -142,24 +144,85 @@ public final class QLTransaction extends QLMessage {
                 .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
                 .operation(transaction.getOperation() == OrderOperation.BUY ? QLOrderOperation.B : QLOrderOperation.S)
                 .quantity(String.valueOf(transaction.getSize()))
-                .price(new DecimalFormat("0.######").format(transaction.getPrice()))
+                .price(toDecimalFormat(transaction.getPrice()))
                 .transId(String.valueOf(transId))
                 .type(QLOrderType.L)
                 .expiryDate(QLOrderExpiryDate.fromDate(transaction.getGoodTill()))
                 .build();
     }
 
-    public static QLTransaction fromFillOrderTransaction(KillOrderTransaction transaction, long transId) {
+    public static QLTransaction fromKillOrderTransaction(KillOrderTransaction transaction, long transId) {
         return builder()
                 .action(QLOrderAction.KILL_ORDER)
                 .account(transaction.getAccount())
-                .clientCode(transaction.getAccount())
+                .clientCode(transaction.getAccount()) // TODO проверить
                 .secCode(transaction.getInstrument().getCode())
                 .classCode(getClassCode(transaction.getInstrument()))
                 .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
                 .transId(String.valueOf(transId))
                 .orderKey(transaction.getOrderExchangeId())
                 .build();
+    }
+
+    public static QLTransaction fromNewStopOrderTransaction(NewStopOrderTransaction transaction, long transId) {
+        var kind = switch (transaction.getType()) {
+            case STOP_LOSS -> QLStopOrderKind.SIMPLE_STOP_ORDER;
+            case TAKE_PROFIT -> QLStopOrderKind.TAKE_PROFIT_STOP_ORDER;
+            case TAKE_PROFIT_AND_STOP_LOSS -> QLStopOrderKind.TAKE_PROFIT_AND_STOP_LIMIT_ORDER;
+            case STOP_LOSS_ACTIVATED_BY_LIMIT_ORDER -> QLStopOrderKind.ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER;
+            case TAKE_PROFIT_ACTIVATED_BY_LIMIT_ORDER -> QLStopOrderKind.ACTIVATED_BY_ORDER_TAKE_PROFIT_STOP_ORDER;
+            case TAKE_PROFIT_AND_STOP_LOSS_ACTIVATED_BY_LIMIT_ORDER ->
+                    QLStopOrderKind.ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER;
+        };
+
+        var stopPrice = switch (kind) {
+            case TAKE_PROFIT_STOP_ORDER,
+                 TAKE_PROFIT_AND_STOP_LIMIT_ORDER,
+                 ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_STOP_ORDER -> transaction.getTakeProfitPrice();
+            default -> transaction.getStopLossPrice();
+        };
+
+        var stopPrice2 = switch (kind) {
+            case TAKE_PROFIT_AND_STOP_LIMIT_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER -> transaction.getStopLossPrice();
+            default -> null;
+        };
+
+        var price = switch (kind) {
+            case SIMPLE_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_SIMPLE_STOP_ORDER,
+                 ACTIVATED_BY_ORDER_TAKE_PROFIT_AND_STOP_LIMIT_ORDER ->
+                    transaction.getStopLossPrice() + transaction.getSlippage() * (transaction.getOperation() == OrderOperation.BUY ? 1 : -1);
+            default -> transaction.getStopLossPrice();
+        };
+
+        return builder()
+                .action(QLOrderAction.NEW_STOP_ORDER)
+                .account(transaction.getAccount())
+                .clientCode(transaction.getComment())  // TODO проверить
+                .secCode(transaction.getInstrument().getCode())
+                .classCode(getClassCode(transaction.getInstrument()))
+                .operation(transaction.getOperation() == OrderOperation.BUY ? QLOrderOperation.B : QLOrderOperation.S)
+                .quantity(String.valueOf(transaction.getSize()))
+                .quantity(String.valueOf(transId))
+                .stopOrderKind(kind)
+                .price(toDecimalFormat(price))
+                .stopPrice(toDecimalFormat(stopPrice))
+                .stopPrice2(toDecimalFormat(stopPrice2))
+                .offset(toDecimalFormat(transaction.getTakeProfitDeviation()))
+                .offsetUnits(QLSpreadUnit.PRICE_UNITS)
+                .spread(toDecimalFormat(transaction.getSlippage()))
+                .spreadUnits(QLSpreadUnit.PRICE_UNITS)
+                .baseOrderKey(transaction.getActivatingOrderId())
+                .useBaseOrderBalance(QLYesNo.YES)
+                .activateIfBaseOrderPartlyFilled(QLYesNo.YES)
+                .expiryDate(QLOrderExpiryDate.fromDate(transaction.getGoodTill()))
+                .build();
+    }
+
+    private static String toDecimalFormat(@Nullable Double value) {
+        return new DecimalFormat("0.######").format(value);
     }
 
     private static String getClassCode(Instrument instrument) {

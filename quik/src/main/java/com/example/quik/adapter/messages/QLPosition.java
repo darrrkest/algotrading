@@ -33,5 +33,5 @@ public final class QLPosition extends QLMessage {
     int totalNet;
 
     @JsonProperty("varmargin")
-    BigDecimal varMargin;
+    double varMargin;
 }

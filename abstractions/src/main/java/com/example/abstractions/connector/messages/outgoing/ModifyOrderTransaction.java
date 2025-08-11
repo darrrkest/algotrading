@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
-
 /**
  * Транзакция на модификацию заявки
  */
@@ -27,8 +25,7 @@ public final class ModifyOrderTransaction extends Transaction {
     /**
      * Новая цена заявки
      */
-    @NotNull
-    private BigDecimal price;
+    private double price;
 
     /**
      * Комментарий

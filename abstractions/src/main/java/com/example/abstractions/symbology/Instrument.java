@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Дескриптор инструмента
@@ -22,14 +23,14 @@ public class Instrument {
     /**
      * Код биржи, на которой торгуется
      */
-    @Nullable
-    private String exchange;
+    @NotNull
+    private final String exchange;
 
     /**
-     * Описание инструмента
+     * Дата экспирации
      */
-    @Nullable
-    private String description;
+    @NotNull
+    private final LocalDate expiration;
 
     /**
      * Тип инструмента
@@ -38,33 +39,49 @@ public class Instrument {
     private InstrumentType type;
 
     /**
-     * Дата экспирации
+     * Описание инструмента
      */
     @Nullable
-    private LocalDate expiration;
+    private String description;
 
     /**
      * Уникальный символ инструмента
      */
     @NotNull
     public String getSymbol() {
-        return exchange == null ? code : String.format("%s:%s", exchange, code);
+        return String.format("%s:%s", exchange, code);
     }
 
-    public Instrument(@NotNull String code) {
+    public Instrument(@NotNull String code,
+                      @NotNull String exchange,
+                      @NotNull LocalDate expiration) {
         this.code = code;
+        this.exchange = exchange;
+        this.expiration = expiration;
     }
 
     public Instrument(@Nullable InstrumentType type,
                       @Nullable String description,
-                      @Nullable String exchange,
-                      @Nullable LocalDate expiration,
+                      @NotNull String exchange,
+                      @NotNull LocalDate expiration,
                       @NotNull String code) {
         this.type = type;
         this.description = description;
         this.exchange = exchange;
         this.expiration = expiration;
         this.code = code;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Instrument that = (Instrument) o;
+        return Objects.equals(code, that.code) && Objects.equals(exchange, that.exchange) && Objects.equals(expiration, that.expiration);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(code, exchange, expiration);
     }
 }
 

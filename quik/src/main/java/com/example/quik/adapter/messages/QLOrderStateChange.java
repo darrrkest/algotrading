@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -41,7 +40,7 @@ public final class QLOrderStateChange extends QLMessage {
     private String account;
 
     @JsonProperty("price")
-    private BigDecimal price;
+    private double price;
 
     @JsonProperty("qty")
     private int quantity;
@@ -86,7 +85,7 @@ public final class QLOrderStateChange extends QLMessage {
     private int extOrderStatus;
 
     @JsonProperty("filled_value")
-    private BigDecimal filledValue;
+    private double filledValue;
 
     @JsonProperty("extref")
     private String extRef;

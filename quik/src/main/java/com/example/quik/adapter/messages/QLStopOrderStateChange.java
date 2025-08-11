@@ -43,10 +43,10 @@ public class QLStopOrderStateChange extends QLMessage {
     private String condition;
 
     @JsonProperty("condition_price")
-    private BigDecimal conditionPrice;
+    private double conditionPrice;
 
     @JsonProperty("price")
-    private BigDecimal price;
+    private double price;
 
     @JsonProperty("qty")
     private int quantity;
@@ -67,7 +67,7 @@ public class QLStopOrderStateChange extends QLMessage {
     private long coOrderNum;
 
     @JsonProperty("co_order_price")
-    private BigDecimal coOrderPrice;
+    private double coOrderPrice;
 
     @JsonProperty("stop_order_type")
     private QLStopOrderKind stopOrderType;
@@ -82,10 +82,10 @@ public class QLStopOrderStateChange extends QLMessage {
     public int stopFlags;
 
     @JsonProperty("offset")
-    public BigDecimal offset;
+    public double offset;
 
     @JsonProperty("spread")
-    public BigDecimal spread;
+    public double spread;
 
     @JsonProperty("balance")
     public int balance;
@@ -100,7 +100,7 @@ public class QLStopOrderStateChange extends QLMessage {
     public long withdrawTime;
 
     @JsonProperty("condition_price2")
-    public BigDecimal conditionPrice2;
+    public double conditionPrice2;
 
     @JsonProperty("active_from_time")
     public long activeFromTime;

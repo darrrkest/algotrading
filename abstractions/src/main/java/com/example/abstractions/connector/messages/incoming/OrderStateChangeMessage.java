@@ -7,7 +7,6 @@ import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -18,8 +17,7 @@ public final class OrderStateChangeMessage extends ConnectorMessage {
     @Nullable
     private String orderExchangeId;
 
-    @Nullable
-    private BigDecimal price;
+    private double price;
     private int activeSize;
     private int filledSize;
     private int size;

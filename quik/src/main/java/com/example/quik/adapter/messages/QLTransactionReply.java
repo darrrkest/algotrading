@@ -3,16 +3,14 @@ package com.example.quik.adapter.messages;
 import com.example.quik.adapter.messages.transaction.QLMessageType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
+import lombok.*;
 
 @Getter
 @Setter
 @JsonTypeName("TransactionReply")
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public final class QLTransactionReply extends QLMessage {
     @Override
     public QLMessageType getMessageType() {
@@ -44,7 +42,7 @@ public final class QLTransactionReply extends QLMessage {
     private long orderNum;
 
     @JsonProperty("price")
-    private BigDecimal price;
+    private double price;
 
     @JsonProperty("quantity")
     private int quantity;
