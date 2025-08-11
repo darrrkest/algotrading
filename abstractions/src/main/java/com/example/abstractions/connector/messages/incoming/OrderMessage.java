@@ -16,5 +16,5 @@ public final class OrderMessage extends ConnectorMessage {
      * Заявка
      */
     @NotNull
-    public Order order;
+    public final Order order;
 }

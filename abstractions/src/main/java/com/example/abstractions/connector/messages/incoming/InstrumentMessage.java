@@ -10,5 +10,5 @@ import org.jetbrains.annotations.NotNull;
 @SuperBuilder
 public abstract class InstrumentMessage extends ConnectorMessage {
     @NotNull
-    public Instrument instrument;
+    public final Instrument instrument;
 }

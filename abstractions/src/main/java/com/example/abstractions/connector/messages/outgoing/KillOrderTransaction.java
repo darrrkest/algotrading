@@ -11,17 +11,19 @@ import java.util.UUID;
 /**
  * Транзакция на снятие заявки
  */
-@SuperBuilder
 @Getter
+@SuperBuilder
 public final class KillOrderTransaction extends Transaction {
 
-    @NotNull
-    private String orderExchangeId;
+    // region required
 
-    @Override
-    public void accept(TransactionMessageVisitor visitor) {
-        visitor.visit(this);
-    }
+    /**
+     * Идентификатор снимаемой заявки
+     */
+    @NotNull
+    private final String orderExchangeId;
+
+    // endregion
 
     public static KillOrderTransaction fromOrder(Order order) {
         return builder()
@@ -30,5 +32,10 @@ public final class KillOrderTransaction extends Transaction {
                 .orderExchangeId(order.getOrderExchangeId())
                 .transactionId(UUID.randomUUID())
                 .build();
+    }
+
+    @Override
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
     }
 }

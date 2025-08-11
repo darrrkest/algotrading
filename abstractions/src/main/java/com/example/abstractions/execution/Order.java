@@ -11,8 +11,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Setter
+@Builder
 public final class Order {
+    // region required
+
     /**
      * Номер счета заявки
      */
@@ -41,6 +43,49 @@ public final class Order {
      */
     private final int size;
 
+    // endregion
+
+    // region final
+
+    /**
+     * Тип заявки
+     */
+    @NotNull
+    @Builder.Default
+    private final OrderType type = OrderType.LIMIT;
+
+    /**
+     * Идентификатор транзакции
+     */
+    @NotNull
+    @Builder.Default
+    private final UUID transactionId = UUID.randomUUID();
+
+    /**
+     * Время жизни заявки
+     */
+    @Nullable
+    @Builder.Default
+    private final LocalDateTime goodTill = null;
+
+    /**
+     * Дата и время заявки
+     */
+    @NotNull
+    @Builder.Default
+    private final LocalDateTime dateTime = LocalDateTime.now();
+
+    /**
+     * Комментарий
+     */
+    @NotNull
+    @Builder.Default
+    private final String comment = "";
+
+    // endregion
+
+    // region mutable
+
     /**
      * Активное(пока не исполнившееся) количество
      */
@@ -48,65 +93,22 @@ public final class Order {
     private int activeSize;
 
     /**
-     * Тип заявки
-     */
-    @NotNull
-    @Setter
-    private OrderType type = OrderType.LIMIT;
-
-    /**
      * Идентификатор заявки, присвоенный биржей
      */
     @Nullable
     @Setter
-    private String orderExchangeId;
-
-    /**
-     * Идентификатор транзакции
-     */
-    @NotNull
-    @Setter
-    private UUID transactionId;
+    @Builder.Default
+    private String orderExchangeId = null;
 
     /**
      * Состояние заявки
      */
     @NotNull
     @Setter
-    private OrderState state;
+    @Builder.Default
+    private OrderState state = OrderState.UNDEFINED;
 
-    /**
-     * Время жизни заявки
-     */
-    @Nullable
-    @Setter
-    private LocalDateTime goodTill = null;
-
-    /**
-     * Дата и время заявки
-     */
-    @NotNull
-    @Setter
-    private LocalDateTime dateTime = LocalDateTime.now();
-
-    /**
-     * Комментарий
-     */
-    @NotNull
-    @Setter
-    private String comment;
-
-    public Order(@NotNull String account,
-                 @NotNull Instrument instrument,
-                 @NotNull OrderOperation operation,
-                 double price,
-                 int size) {
-        this.account = account;
-        this.instrument = instrument;
-        this.operation = operation;
-        this.price = price;
-        this.size = size;
-    }
+    // endregion
 
     @Override
     public String toString() {

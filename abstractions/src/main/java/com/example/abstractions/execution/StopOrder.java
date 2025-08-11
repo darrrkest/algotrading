@@ -3,6 +3,7 @@ package com.example.abstractions.execution;
 import com.example.abstractions.symbology.Instrument;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,100 +17,121 @@ import java.util.UUID;
 @Builder
 public final class StopOrder {
 
+    // region required
+
     /**
      * Номер счета заявки
      */
     @NotNull
-    private String account;
+    private final String account;
 
     /**
      * Инструмент заявки
      */
     @NotNull
-    private Instrument instrument;
+    private final Instrument instrument;
 
     /**
      * Операция стоп заяки
      */
     @NotNull
-    private OrderOperation operation;
+    private final OrderOperation operation;
 
     /**
      * Количество контрактов/лотов
      */
-    private int size;
+    private final int size;
 
     /**
      * Тип стоп заявки
      */
     @NotNull
-    private StopOrderType type;
+    private final StopOrderType type;
+
+    // endregion
+
+    // region final
 
     /**
      * Цена, по которой выставляется лимитная стоп-лосс заявка
      */
-    private double stopLossPrice;
+    private final double stopLossPrice;
 
     /**
      * Цена, при которой срабатывает стоп заявка
      */
-    private double stopLossTriggerPrice;
+    private final double stopLossTriggerPrice;
 
     /**
      * Проскальзывание. Как для СЛ, так и ТП
      */
-    private double slippage;
+    private final double slippage;
 
     /**
      * Цена, при которой активируется тейк профит и начинается расчет
      */
     @Nullable
-    private Double takeProfitTriggerPrice;
+    @Builder.Default
+    private final Double takeProfitTriggerPrice = null;
 
     /**
      * Отклонение от экстремума, при котором сработает тейк профит
      */
-    private double takeProfitDeviation;
+    private final double takeProfitDeviation;
 
     /**
      * Биржевой ID заявки, при исполнении которой активируется стоп заявка
      */
     @Nullable
-    private String activatingOrderId;
-
-    /**
-     * Биржевой идентификатор заявки
-     */
-    @Nullable
-    private String orderExchangeId;
+    @Builder.Default
+    private final String activatingOrderId = null;
 
     /**
      * Идектификатор транзакции
      */
     @Nullable
-    private UUID transactionId;
-
-    /**
-     * Состояние стоп заявки
-     */
-    @NotNull
-    private StopOrderState state;
+    @Builder.Default
+    private final UUID transactionId = UUID.randomUUID();
 
     /**
      * Время жизни стоп заявки
      */
     @Nullable
-    private LocalDateTime goodTill;
+    @Builder.Default
+    private final LocalDateTime goodTill = null;
 
     /**
      * Дата и время заявки
      */
-    @Nullable
-    private LocalDateTime dateTime;
+    @NotNull
+    @Builder.Default
+    private final LocalDateTime dateTime = LocalDateTime.now();
 
     /**
      * Комментарий к заявке
      */
     @Nullable
-    private String comment;
+    @Builder.Default
+    private final String comment = null;
+
+    // endregion
+
+    // region mutable
+
+    /**
+     * Состояние стоп заявки
+     */
+    @NotNull
+    @Setter
+    @Builder.Default
+    private StopOrderState state = StopOrderState.UNDEFINED;
+
+    /**
+     * Биржевой идентификатор заявки
+     */
+    @Nullable
+    @Setter
+    private String orderExchangeId;
+
+    // endregion
 }

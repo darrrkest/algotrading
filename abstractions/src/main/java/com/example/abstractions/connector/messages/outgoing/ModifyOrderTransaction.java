@@ -1,5 +1,7 @@
 package com.example.abstractions.connector.messages.outgoing;
 
+import com.example.abstractions.connector.messages.TransactionMessageVisitor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -11,25 +13,39 @@ import org.jetbrains.annotations.NotNull;
 @SuperBuilder
 public final class ModifyOrderTransaction extends Transaction {
 
+    // region required
+
     /**
      * Биржевой идентификатор заявки
      */
     @NotNull
-    private String orderExchangeId;
+    private final String orderExchangeId;
 
     /**
      * Новый объем заявки
      */
-    private int quantity;
+    private final int quantity;
 
     /**
      * Новая цена заявки
      */
-    private double price;
+    private final double price;
+
+    // endregion
+
+    // region final
 
     /**
      * Комментарий
      */
     @NotNull
-    private String comment;
+    @Builder.Default
+    private String comment = "";
+
+    // endregion
+
+    @Override
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
+    }
 }

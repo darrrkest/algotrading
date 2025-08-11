@@ -16,100 +16,91 @@ import java.time.LocalTime;
 @SuperBuilder
 public final class InstrumentParams extends InstrumentMessage {
     @Nullable
-    private Quote bid;
+    private final Quote bid;
 
     @Nullable
-    private Quote ask;
+    private final Quote ask;
 
     @Nullable
-    private Quote last;
+    private final Quote last;
 
     /**
      * Максимально возможная цена
      */
-    @NotNull
-    private double topPriceLimit;
+    private final double topPriceLimit;
 
     /**
      * Минимально возможная цена
      */
-    @NotNull
-    private double bottomPriceLimit;
+    private final double bottomPriceLimit;
 
     /**
      * Точность цены
      */
-    private int decimalPlaces;
+    private final int decimalPlaces;
 
     /**
      * Размер одного лота
      */
-    private int lotSize;
+    private final int lotSize;
 
     /**
      * Шаг цены инструмента
      */
-    @NotNull
-    private double priceStep;
+    private final double priceStep;
 
     /**
      * Стоимость шага цены инструмента
      */
-    @Nullable
-    private double priceStepValue;
+    private final double priceStepValue;
 
     /**
      * Расчетная цена
      */
-    @NotNull
-    private double settlement;
+    private final double settlement;
 
     /**
      * Расчетная цена предыдущего торгового дня
      */
-    @NotNull
-    private double previousSettlement;
+    private final double previousSettlement;
 
     /**
      * Теоретическая цена
      */
-    @NotNull
-    private double theorPrice;
+    private final double theorPrice;
 
     /**
      * Волатильность опциона
      */
-    @NotNull
-    private double IV;
+    private final double IV;
 
     /**
      * Воемя окончания торговой сессии
      */
     @NotNull
-    private LocalTime sessionEndTime;
+    private final LocalTime sessionEndTime;
 
     /**
      * Открытый интерес
      */
-    private int openInterest;
+    private final int openInterest;
 
     /**
      * Время последнего обновления параметров
      */
     @NotNull
-    private LocalDateTime lastUpdateTime;
+    private final LocalDateTime lastUpdateTime;
 
     /**
      * Дата экспирации инструмента
      */
     @NotNull
-    private LocalDate expireDate;
+    private final LocalDate expireDate;
 
     /**
      * Номинал инструмента
      * <br>
      * NominalPrice = ( priceStep / priceStepValue) * previousSettlement;
      */
-    @Nullable
     private double nominal;
 }

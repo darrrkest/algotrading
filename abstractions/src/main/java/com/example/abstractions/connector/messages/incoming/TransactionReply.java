@@ -19,14 +19,14 @@ public final class TransactionReply extends ConnectorMessage {
 
     @JsonProperty("TransactionId")
     @NotNull
-    private UUID transactionId;
+    private final UUID transactionId;
 
     @JsonProperty("Success")
-    private boolean success;
+    private final boolean success;
 
     @JsonProperty("Message")
     @Nullable
-    private String message;
+    private final String message;
 
     public static TransactionReply accepted(UUID transactionId) {
         return builder()

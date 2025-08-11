@@ -15,19 +15,22 @@ import java.util.UUID;
 public final class OrderStateChangeMessage extends ConnectorMessage {
 
     @Nullable
-    private String orderExchangeId;
+    private final String orderExchangeId;
 
-    private double price;
-    private int activeSize;
-    private int filledSize;
-    private int size;
+    private final double price;
+
+    private final int activeSize;
+
+    private final int filledSize;
+
+    private final int size;
 
     @Nullable
-    private UUID transactionId;
+    private final UUID transactionId;
 
     @NotNull
-    private OrderState state;
+    private final OrderState state;
 
     @NotNull
-    private LocalDateTime changeTime;
+    private final LocalDateTime changeTime;
 }

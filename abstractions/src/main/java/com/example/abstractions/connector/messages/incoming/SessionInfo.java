@@ -16,17 +16,17 @@ import java.time.LocalTime;
 @SuperBuilder
 public final class SessionInfo extends ConnectorMessage {
     @NotNull
-    private LocalTime serverTime;
+    private final LocalTime serverTime;
 
     @Nullable
-    private Duration startTime;
+    private final Duration startTime;
 
     @Nullable
-    private Duration endTime;
+    private final Duration endTime;
 
     @Nullable
-    private Duration eveningStartTime;
+    private final Duration eveningStartTime;
 
     @Nullable
-    private Duration eveningEndTime;
+    private final Duration eveningEndTime;
 }

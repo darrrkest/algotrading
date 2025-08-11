@@ -548,22 +548,10 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     @NotNull
     private static Order createOrder(Instrument instrument, QLOrderStateChange message) {
-        var order = new Order(
-                message.getAccount(),
-                instrument,
-                message.getOperation(),
-                message.getPrice(),
-                message.getQuantity()
-        );
-        order.setOrderExchangeId(String.valueOf(message.getOrderExchangeId()));
-        order.setState();
-        order.setActiveSize(message.getBalance());
-        order.setState();
-        order.setState();
-        return
-        Order.builder()
-
-
+        return Order.builder()
+                .orderExchangeId(String.valueOf(message.getOrderExchangeId()))
+                .instrument(instrument)
+                .account(message.getAccount())
                 .activeSize(message.getBalance())
                 .size(message.getQuantity())
                 .state(message.getState())

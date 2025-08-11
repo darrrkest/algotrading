@@ -13,11 +13,12 @@ import org.jetbrains.annotations.NotNull;
 @SuperBuilder
 public final class PositionMessage extends AccountMessage {
     @NotNull
-    private ConnectorType connectorType;
+    private final ConnectorType connectorType;
 
     @NotNull
-    private Instrument instrument;
-    private int quantity;
+    private final Instrument instrument;
 
-    private double price;
+    private final int quantity;
+
+    private final double price;
 }

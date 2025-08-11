@@ -24,7 +24,6 @@ public class FillMessage extends AccountMessage {
     @NotNull
     private OrderOperation operation;
 
-    @NotNull
     private double price;
     private int size;
 

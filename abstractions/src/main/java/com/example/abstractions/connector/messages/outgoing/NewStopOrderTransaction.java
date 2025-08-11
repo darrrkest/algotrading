@@ -1,8 +1,12 @@
 package com.example.abstractions.connector.messages.outgoing;
 
+import com.example.abstractions.connector.messages.TransactionMessageVisitor;
 import com.example.abstractions.execution.OrderOperation;
 import com.example.abstractions.execution.StopOrder;
 import com.example.abstractions.execution.StopOrderType;
+import com.example.abstractions.symbology.Instrument;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -14,64 +18,76 @@ import java.util.UUID;
 @Getter
 @SuperBuilder
 public final class NewStopOrderTransaction extends Transaction {
+
+    // region required
+
     /**
      * Тип стоп заявки
      */
     @NotNull
-    private StopOrderType type;
+    private final StopOrderType type;
 
     /**
      * Количество контрактов/лотов
      */
-    private int size;
+    private final int size;
 
     /**
      * Операция стоп заявки
      */
     @NotNull
-    private OrderOperation operation;
+    private final OrderOperation operation;
+
+    // endregion
+
+    // region final
 
     /**
      * Цена, при которой срабатывает стоп заявка
      */
-    @Nullable
-    private Double stopLossPrice;
+    @Builder.Default
+    private final double stopLossPrice;
 
     /**
      * Проскальзывание. Как для СЛ, так и ТП
      */
-    @Nullable
-    private Double slippage;
+    @Builder.Default
+    private final double slippage;
 
     /**
      * Цена, при которой активируется тейк профит и начинается расчет
      */
-    @Nullable
-    private Double takeProfitPrice;
+    @Builder.Default
+    private final double takeProfitPrice;
 
     /**
      * Отклонение от экстремума, при котором сработает тейк профит
      */
-    @Nullable
-    private Double takeProfitDeviation;
+    @Builder.Default
+    private final double takeProfitDeviation;
 
     /**
      * Биржевой ID заявки, при исполнении которой активируется сто заявка
      */
     @Nullable
-    private String activatingOrderId;
+    @Builder.Default
+    private final String activatingOrderId = null;
 
     /**
      * Время жизни стоп заявки
      */
     @Nullable
-    private LocalDateTime goodTill;
+    @Builder.Default
+    private final LocalDateTime goodTill = null;
 
     /**
      * Комментарий к заявке
      */
     @Nullable
-    private String comment;
+    @Builder.Default
+    private final String comment = null;
+
+    // endregion
 
     @NotNull
     public static NewStopOrderTransaction fromStopOrder(StopOrder order) {
@@ -89,5 +105,10 @@ public final class NewStopOrderTransaction extends Transaction {
                 .goodTill(order.getGoodTill())
                 .transactionId(UUID.randomUUID())
                 .build();
+    }
+
+    @Override
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -11,10 +11,10 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @SuperBuilder
-public class StopOrderMessage extends ConnectorMessage {
+public final class StopOrderMessage extends ConnectorMessage {
     /**
      * Заявка
      */
     @NotNull
-    public StopOrder stopOrder;
+    public final StopOrder stopOrder;
 }

@@ -13,5 +13,5 @@ import org.jetbrains.annotations.NotNull;
 public abstract class AccountMessage extends ConnectorMessage {
 
     @NotNull
-    private String account;
+    private final String account;
 }

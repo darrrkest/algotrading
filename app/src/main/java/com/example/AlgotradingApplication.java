@@ -50,25 +50,25 @@ public class AlgotradingApplication {
 
         }
 
-        connector.getRouter().visit(NewOrderTransaction.fromOrder(
-                Order.builder()
-                        .account("SPBFUT000h9")
-                        .instrument(
-                                new Instrument("GDU5",
-                                Venue.MOEX.getName(),
-                                LocalDate.of(2025, 9, 19))
-                        )
-                        .operation(OrderOperation.BUY)
-                        .transactionId(UUID.randomUUID())
-                        .state(OrderState.UNDEFINED)
-                        .type(OrderType.LIMIT)
-                        .dateTime(LocalDateTime.now())
-                        .price(7150)
-                        .size(1)
-                        .comment("comment")
-                        .goodTill(null)
-                        .build()
-        ));
+        //connector.getRouter().visit(NewOrderTransaction.fromOrder(
+        //        Order.builder()
+        //                .account("SPBFUT000h9")
+        //                .instrument(
+        //                        new Instrument("GDU5",
+        //                        Venue.MOEX.getName(),
+        //                        LocalDate.of(2025, 9, 19))
+        //                )
+        //                .operation(OrderOperation.BUY)
+        //                .transactionId(UUID.randomUUID())
+        //                .state(OrderState.UNDEFINED)
+        //                .type(OrderType.LIMIT)
+        //                .dateTime(LocalDateTime.now())
+        //                .price(7150)
+        //                .size(1)
+        //                .comment("comment")
+        //                .goodTill(null)
+        //                .build()
+        //));
         return connector;
     }
 
