@@ -25,6 +25,11 @@ public final class KillOrderTransaction extends Transaction {
 
     // endregion
 
+    @Override
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
+    }
+
     public static KillOrderTransaction fromOrder(Order order) {
         return builder()
                 .account(order.getAccount())
@@ -32,10 +37,5 @@ public final class KillOrderTransaction extends Transaction {
                 .orderExchangeId(order.getOrderExchangeId())
                 .transactionId(UUID.randomUUID())
                 .build();
-    }
-
-    @Override
-    public void accept(TransactionMessageVisitor visitor) {
-        visitor.visit(this);
     }
 }

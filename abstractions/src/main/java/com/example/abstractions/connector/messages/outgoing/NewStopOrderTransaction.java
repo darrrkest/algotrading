@@ -89,6 +89,11 @@ public final class NewStopOrderTransaction extends Transaction {
 
     // endregion
 
+    @Override
+    public void accept(TransactionMessageVisitor visitor) {
+        visitor.visit(this);
+    }
+
     @NotNull
     public static NewStopOrderTransaction fromStopOrder(StopOrder order) {
         return builder()
@@ -105,10 +110,5 @@ public final class NewStopOrderTransaction extends Transaction {
                 .goodTill(order.getGoodTill())
                 .transactionId(UUID.randomUUID())
                 .build();
-    }
-
-    @Override
-    public void accept(TransactionMessageVisitor visitor) {
-        visitor.visit(this);
     }
 }

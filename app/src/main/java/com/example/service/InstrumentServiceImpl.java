@@ -86,7 +86,8 @@ public final class InstrumentServiceImpl implements InstrumentService {
     }
 
     @Override
-    public Instrument resolveInstrument(@NotNull String symbol, @NotNull ConnectorType connectorType) {
+    public Instrument resolveInstrument(@NotNull String code, @NotNull String exchange) {
+        var symbol = String.format("%s:%s", exchange, code);
         synchronized (lock) {
             return instruments.stream().filter(e -> e.getSymbol().equals(symbol)).findFirst().orElse(null);
         }

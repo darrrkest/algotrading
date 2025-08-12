@@ -7,6 +7,7 @@ import com.example.abstractions.connector.messages.outgoing.*;
 import com.example.abstractions.execution.*;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
+import com.example.abstractions.symbology.Venue;
 import com.example.quik.adapter.QLAdapter;
 import com.example.quik.adapter.messages.*;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Реализация диспетчера заявок с QUIK
+ */
 public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     private static final Logger log = LoggerFactory.getLogger(QLRouterImpl.class);
@@ -98,7 +102,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
         updateTransId(message.getTransId());
 
-        var instrument = instrumentService.resolveInstrument(message.getSecCode(), ConnectorType.QUIK);
+        var instrument = instrumentService.resolveInstrument(message.getSecCode(), Venue.MOEX.getName());
         if (instrument == null) {
             log.warn("Cannot resolve instrument: {}", message.getSecCode());
             return;
@@ -258,7 +262,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             var order = ordersContainer.getOrder(message.getOrderExchangeId());
 
             if (order == null) {
-                var instrument = instrumentService.resolveInstrument(message.getSecCode(), ConnectorType.QUIK);
+                var instrument = instrumentService.resolveInstrument(message.getSecCode(), Venue.MOEX.getName());
                 if (instrument == null) {
                     log.warn("Cannot resolve instrument: {}", message.getSecCode());
                     return;
@@ -313,7 +317,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
         try {
             log.debug("Handle QLPosition: message {}", message);
 
-            var instrument = instrumentService.resolveInstrument(message.getSecCode(), ConnectorType.QUIK);
+            var instrument = instrumentService.resolveInstrument(message.getSecCode(), Venue.MOEX.getName());
 
             if (instrument == null) {
                 log.warn("Cannot resolve instrument: {}", message.getSecCode());
@@ -345,7 +349,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
         try {
             log.debug("Handle QLFill: {}", message);
 
-            var instrument = instrumentService.resolveInstrument(message.getSecCode(), ConnectorType.QUIK);
+            var instrument = instrumentService.resolveInstrument(message.getSecCode(), Venue.MOEX.getName());
 
             if (instrument == null) {
                 log.warn("Cannot resolve instrument: {}", message.getSecCode());

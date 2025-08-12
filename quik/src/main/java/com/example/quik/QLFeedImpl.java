@@ -8,6 +8,7 @@ import com.example.abstractions.connector.messages.incoming.Quote;
 import com.example.abstractions.execution.OrderOperation;
 import com.example.abstractions.symbology.Instrument;
 import com.example.abstractions.symbology.InstrumentService;
+import com.example.abstractions.symbology.Venue;
 import com.example.quik.adapter.QLAdapter;
 import com.example.quik.adapter.messages.*;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -80,7 +83,7 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
     }
 
     private void Handle(QLInstrumentParams message) {
-        var instrument = instrumentService.resolveInstrument(message.getCode(), ConnectorType.QUIK);
+        var instrument = instrumentService.resolveInstrument(message.getCode(), Venue.MOEX.getName());
 
         if (instrument == null) {
             log.warn("Cannot resolve instrument: {}", message.getCode());
@@ -114,13 +117,17 @@ public final class QLFeedImpl extends ConnectorService implements QLFeed {
                 .sessionEndTime(message.getEndTime())
                 .openInterest(message.getOpenInterest())
                 .lastUpdateTime(LocalDateTime.now())
+                .expireDate(LocalDate.parse(
+                        message.getExpireDate().split("\\.")[0],
+                        DateTimeFormatter.BASIC_ISO_DATE
+                ))
                 .build();
 
         raiseMessageReceived(this, ip);
     }
 
     private void Handle(QLOrderBook message) {
-        var instrument = instrumentService.resolveInstrument(message.getInstrument(), ConnectorType.QUIK);
+        var instrument = instrumentService.resolveInstrument(message.getInstrument(), Venue.MOEX.getName());
 
         if (instrument == null) {
             log.warn("Cannot resolve instrument: {}", message.getInstrument());

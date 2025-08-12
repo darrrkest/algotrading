@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Транзакция на постановку новой заявки
@@ -70,5 +71,21 @@ public final class NewOrderTransaction extends Transaction {
     @Override
     public void accept(TransactionMessageVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @NotNull
+    public static NewOrderTransaction fromOrder(@NotNull Order order) {
+        return builder()
+                .account(order.getAccount())
+                .instrument(order.getInstrument())
+                .operation(order.getOperation())
+                .size(order.getSize())
+                .price(order.getPrice())
+                .comment(order.getComment())
+                .goodTill(order.getGoodTill())
+                .transactionId(UUID.randomUUID())
+                .type(OrderType.LIMIT)
+                .executionCondition(OrderExecutionCondition.PUT_UN_QUEUE)
+                .build();
     }
 }

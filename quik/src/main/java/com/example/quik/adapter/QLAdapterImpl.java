@@ -6,7 +6,9 @@ import com.example.quik.QLConnectorImpl;
 import com.example.quik.QLMessageListener;
 import com.example.quik.adapter.messages.QLEnvelope;
 import com.example.quik.adapter.messages.QLEnvelopeAcknowledgment;
+import com.example.quik.adapter.messages.QLInstrumentParams;
 import com.example.quik.adapter.messages.QLMessage;
+import com.example.quik.adapter.messages.transaction.QLMessageType;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,7 +257,13 @@ public final class QLAdapterImpl implements QLAdapter {
                 envelope = QLMapper.deserializeEnvelope(json);
                 if (envelope.getCount() <= 0) continue;
                 for (QLMessage message : envelope.getBody()) {
-                    onMessageReceived(message);
+
+                    try {
+                        onMessageReceived(message);
+                    }
+                    catch (Exception e) {
+                        log.error("Error while handling message {}, {}", message, e.getStackTrace());
+                    }
                 }
 
                 outgoingMessages.offer(new QLEnvelopeAcknowledgment(envelope.getId()));

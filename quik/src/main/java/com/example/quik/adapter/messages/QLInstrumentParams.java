@@ -97,7 +97,7 @@ public final class QLInstrumentParams extends QLMessage {
 
     @Override
     public String toString() {
-        return "QLInstrumentParams{" +
+        return "QLInstrumentParams {" +
                 "code='" + code + '\'' +
                 ", fullCode='" + fullCode + '\'' +
                 ", bidPrice=" + bidPrice +

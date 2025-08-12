@@ -36,5 +36,5 @@ public interface InstrumentService {
      * Возвращает инструмент, если он настроен в системе. Иначе null
      */
     @Nullable
-    Instrument resolveInstrument(@NotNull String symbol, @NotNull ConnectorType connectorType);
+    Instrument resolveInstrument(@NotNull String symbol, @NotNull String exchange);
 }
