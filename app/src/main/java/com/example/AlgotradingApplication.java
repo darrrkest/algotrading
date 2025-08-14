@@ -61,6 +61,7 @@ public class AlgotradingApplication {
                         .price(7150)
                         .size(1)
                         .operation(OrderOperation.BUY)
+                        .goodTill(LocalDateTime.MAX)
                         .build()
         ));
         return connector;

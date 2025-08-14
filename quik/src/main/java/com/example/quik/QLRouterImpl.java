@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,11 +133,10 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
         var pendingOscmToProcess = ordersContainer.putTransactionReply(message, orderExchangeId);
 
-        if (pendingOscmToProcess.isPresent()) {
-            var oscms = pendingOscmToProcess.get();
-            log.debug("Handle(TransactionReply) fires {} pending OSCMs to process", oscms.size());
+        if (pendingOscmToProcess != null) {
+            log.debug("Handle(TransactionReply) fires {} pending OSCMs to process", pendingOscmToProcess.size());
 
-            for (var oscm : oscms) {
+            for (var oscm : pendingOscmToProcess) {
                 if (oscm.getOrderExchangeId() == orderExchangeId && oscm.getTransId() == 0) {
                     oscm.setTransId(message.getTransId());
                 }
@@ -271,12 +271,30 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                 order = createOrder(instrument, message);
                 ordersContainer.putOrder(message.getOrderExchangeId(), order);
 
+                var transactionId = order.getTransactionId();
+
                 raiseMessageReceived(
                         this,
                         OrderMessage.builder()
                                 .order(order)
                                 .build()
                 );
+
+                if (order.getOriginalOrderExchangeId() != null &&
+                        !Objects.equals(order.getOriginalOrderExchangeId(), "0") &&
+                        order.getOrderExchangeId() != null &&
+                        !Objects.equals(order.getOriginalOrderExchangeId(), order.getOrderExchangeId())) {
+
+                    ordersContainer.mapOrderOnOriginalId(
+                            order.getOriginalOrderExchangeId(),
+                            Long.parseLong(order.getOrderExchangeId())
+                    );
+
+                    var originTransaction = ordersContainer.getOriginalOrderTransactionId(message.getOriginalOrderExchangeId());
+                    order.setTransactionId(Objects.requireNonNullElse(originTransaction, transactionId));
+
+                    applyTransferredOrderSubstitution(message);
+                }
 
                 raiseMessageReceived(this,
                         createOrderChange(
@@ -285,6 +303,9 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                         )
                 );
             } else {
+                if (message.getOriginalOrderExchangeId() != 0) {
+                    applyTransferredOrderSubstitution(message);
+                }
                 raiseMessageReceived(this,
                         createOrderChange(
                                 message,
@@ -294,6 +315,26 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
             }
         } catch (Exception e) {
             log.error("Failed to process {}", message);
+        }
+    }
+
+    private void applyTransferredOrderSubstitution(QLOrderStateChange message) {
+        message.setOriginalOrderExchangeId(Long.parseLong(ordersContainer.getOriginalOrderIdByTransferredId(message.getOriginalOrderExchangeId())));
+
+        var lastOriginalOscm = ordersContainer.getLastOrderStateChangeForOrderId(message.getOriginalOrderExchangeId());
+
+        if (lastOriginalOscm != null && lastOriginalOscm.getFilled() != 0) {
+            message.setFilled(message.getFilled() + lastOriginalOscm.getFilled());
+            message.setQuantity(message.getQuantity() + lastOriginalOscm.getFilled());
+
+            log.debug("Original order with ID {} partially filled {}/{}. Transferred order {} substitution - {}/{}",
+                    message.getOriginalOrderExchangeId(),
+                    lastOriginalOscm.getFilled(),
+                    lastOriginalOscm.getQuantity(),
+                    message.getOrderExchangeId(),
+                    lastOriginalOscm.getFilled(),
+                    lastOriginalOscm.getQuantity()
+            );
         }
     }
 
@@ -329,6 +370,8 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                     PositionMessage.builder()
                             .account(message.getAccount())
                             .instrument(instrument)
+                            .connectorType(ConnectorType.QUIK)
+                            .price(message.getAvrPosnPrice())
                             .quantity(message.getTotalNet())
                             .build()
             );
@@ -356,9 +399,11 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                 return;
             }
 
+            message.setOrderId(Long.parseLong(ordersContainer.getOriginalOrderIdByTransferredId(message.getOrderId())));
+
             if (ordersContainer.isCurrentSessionOrder(message.getOrderId())) {
                 var lastOscm = ordersContainer.getLastOrderStateChangeForOrderId(message.getOrderId());
-                if (lastOscm.isEmpty()) {
+                if (lastOscm == null) {
                     log.debug("Handle QLFill: FillId={} will be processed later, no OSCM received", message.getFillId());
                     ordersContainer.putPendingFill(message);
                     return;
@@ -437,12 +482,12 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
         var lastOscm = ordersContainer.getLastOrderStateChangeForTransactionId(message);
 
-        if (lastOscm.isEmpty()) {
+        if (lastOscm == null) {
             ordersContainer.putPendingTransactionReply(message);
             return;
         }
 
-        var lastState = lastOscm.get().getState();
+        var lastState = lastOscm.getState();
 
         if (killOrderTransaction != null && lastState == OrderState.NEW) {
             log.debug("Postpone kill TransactionReply. Last order state is {}", lastState);
@@ -458,7 +503,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
         }
 
         if (modifyOrderTransaction != null &&
-                (lastState == OrderState.NEW || lastState == OrderState.UNDEFINED || lastOscm.get().getTransId() != message.getTransId())) {
+                (lastState == OrderState.NEW || lastState == OrderState.UNDEFINED || lastOscm.getTransId() != message.getTransId())) {
             log.debug("Postpone modify TransactionReply. Last order state is {}", lastState);
             log.error("Handle TransactionReply: for modify transaction not implemented");
             ordersContainer.putPendingTransactionReply(message);

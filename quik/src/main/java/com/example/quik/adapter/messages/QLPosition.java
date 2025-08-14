@@ -34,4 +34,7 @@ public final class QLPosition extends QLMessage {
 
     @JsonProperty("varmargin")
     double varMargin;
+
+    @JsonProperty("avrposnprice")
+    double avrPosnPrice;
 }

@@ -69,6 +69,9 @@ public final class QLOrderStateChange extends QLMessage {
     @JsonProperty("class_code")
     private String classCode;
 
+    @JsonProperty("linkedorder")
+    private long originalOrderExchangeId;
+
     @JsonProperty("datetime")
     private QLDateTime datetime;
 

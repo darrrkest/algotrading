@@ -155,10 +155,11 @@ public class QLOrdersContainer {
     /**
      * Обработать ответ на постановку транзакции, возвращает список QLOrderStateChange, обработка которых была отложена
      */
-    public Optional<List<QLOrderStateChange>> putTransactionReply(QLTransactionReply message, long orderExchangeId) {
+    @Nullable
+    public List<QLOrderStateChange> putTransactionReply(QLTransactionReply message, long orderExchangeId) {
         List<QLOrderStateChange> oscmToProcess = null;
         synchronized (lock) {
-            if (!newOrderTransactionsWithoutReplies.contains(orderExchangeId)) return Optional.empty();
+            if (!newOrderTransactionsWithoutReplies.contains(orderExchangeId)) return null;
         }
 
         var newOrderTransaction = mapQuikTransIdOnNewOrderTransaction.get(orderExchangeId);
@@ -189,7 +190,7 @@ public class QLOrdersContainer {
             mapOrderIdOnPendingOrderStateChange.clear();
         }
 
-        return Optional.ofNullable(oscmToProcess);
+        return oscmToProcess;
     }
 
     /**
@@ -245,7 +246,8 @@ public class QLOrdersContainer {
     /**
      * Возвращает последний полученный статус заявки, связанный с транзакцией с идентификатором transId
      */
-    public Optional<QLOrderStateChange> getLastOrderStateChangeForTransactionId(QLTransactionReply reply) {
+    @Nullable
+    public QLOrderStateChange getLastOrderStateChangeForTransactionId(QLTransactionReply reply) {
         QLOrderStateChange value;
 
         synchronized (lock) {
@@ -256,31 +258,32 @@ public class QLOrdersContainer {
 
             var oscms = orderStateChanges.get(orderId);
             if (oscms == null || oscms.isEmpty()) {
-                return Optional.empty();
+                return null;
             }
 
             value = oscms.get(oscms.size() - 1);
         }
 
-        return Optional.ofNullable(value);
+        return value;
     }
 
     /**
      * Возвращает последний OSCM для указанного биржевого номера заявки
      */
-    public Optional<QLOrderStateChange> getLastOrderStateChangeForOrderId(long orderId) {
+    @Nullable
+    public QLOrderStateChange getLastOrderStateChangeForOrderId(long orderId) {
         QLOrderStateChange value;
 
         synchronized (lock) {
             var oscms = orderStateChanges.get(orderId);
             if (oscms == null || oscms.isEmpty()) {
-                return Optional.empty();
+                return null;
             }
 
             value = oscms.get(oscms.size() - 1);
         }
 
-        return Optional.ofNullable(value);
+        return value;
     }
 
     /**
@@ -498,6 +501,7 @@ public class QLOrdersContainer {
     /**
      * Получение внутреннего идентификатора заявки по её ID
      */
+    @Nullable
     public UUID getOriginalOrderTransactionId(long orderId) {
         synchronized (lock) {
             var transaction = mapOrderIdOnNewOrderTransaction.get(orderId);

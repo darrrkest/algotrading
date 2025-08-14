@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Инйормация о позиции по заданному инструменту на заданном счете
+ * Информация о позиции по заданному инструменту на заданном счете
  */
 @Getter
 @SuperBuilder

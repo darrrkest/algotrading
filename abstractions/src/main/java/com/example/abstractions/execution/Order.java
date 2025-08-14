@@ -55,13 +55,6 @@ public final class Order {
     private final OrderType type = OrderType.LIMIT;
 
     /**
-     * Идентификатор транзакции
-     */
-    @NotNull
-    @Builder.Default
-    private final UUID transactionId = UUID.randomUUID();
-
-    /**
      * Время жизни заявки
      */
     @Nullable
@@ -87,6 +80,14 @@ public final class Order {
     // region mutable
 
     /**
+     * Идентификатор транзакции
+     */
+    @NotNull
+    @Setter
+    @Builder.Default
+    private UUID transactionId = UUID.randomUUID();
+
+    /**
      * Активное(пока не исполнившееся) количество
      */
     @Setter
@@ -99,6 +100,14 @@ public final class Order {
     @Setter
     @Builder.Default
     private String orderExchangeId = null;
+
+    /**
+     * Идентификатор исходной заявки
+     */
+    @Nullable
+    @Setter
+    @Builder.Default
+    private String originalOrderExchangeId = null;
 
     /**
      * Состояние заявки
