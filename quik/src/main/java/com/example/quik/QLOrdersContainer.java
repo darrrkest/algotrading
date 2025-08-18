@@ -40,7 +40,8 @@ public class QLOrdersContainer {
     private final Map<Long, List<QLOrderStateChange>> mapOrderIdOnPendingOrderStateChange = new HashMap<>();
     private final Map<Long, NewOrderTransaction> mapOrderIdOnNewOrderTransaction = new HashMap<>();
     private final List<QLTransactionReply> pendingTransactionReplies = new ArrayList<>();
-    private HashSet<Long> processedFills = new HashSet<>();
+    private final HashSet<Long> processedFills = new HashSet<>();
+    private final HashSet<Long> announcedOrders = new HashSet<>();
 
     /**
      * Добавить в очередь ответ на транзакцию
@@ -508,4 +509,26 @@ public class QLOrdersContainer {
             return transaction != null ? transaction.getTransactionId() : null;
         }
     }
+
+    /**
+     * Пометить заявку объявленной
+     * @param orderId биржевой идентификатор заявки
+     */
+    public void markOrderAnnounced(long orderId) {
+        synchronized (lock) {
+            announcedOrders.add(orderId);
+        }
+    }
+
+    /**
+     * Проверить объявлена ли заявка
+     * @param orderId биржевой идентификатор заявки
+     */
+    public boolean isOrderAnnounced(long orderId) {
+        synchronized (lock) {
+            return announcedOrders.contains(orderId);
+        }
+    }
+
+
 }

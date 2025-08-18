@@ -255,6 +255,8 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
                         .price(message.getPrice())
                         .build()
         );
+
+        ordersContainer.markOrderAnnounced(message.getOrderExchangeId());
     }
 
     private void ProcessUnknownOrderStateChange(QLOrderStateChange message) {
@@ -295,24 +297,20 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
                     applyTransferredOrderSubstitution(message);
                 }
-
-                raiseMessageReceived(this,
-                        createOrderChange(
-                                message,
-                                order.getTransactionId()
-                        )
-                );
             } else {
                 if (message.getOriginalOrderExchangeId() != 0) {
                     applyTransferredOrderSubstitution(message);
                 }
-                raiseMessageReceived(this,
-                        createOrderChange(
-                                message,
-                                order.getTransactionId()
-                        )
-                );
             }
+
+            raiseMessageReceived(this,
+                    createOrderChange(
+                            message,
+                            order.getTransactionId()
+                    )
+            );
+
+            ordersContainer.markOrderAnnounced(message.getOrderExchangeId());
         } catch (Exception e) {
             log.error("Failed to process {}", message);
         }
@@ -401,7 +399,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
             message.setOrderId(Long.parseLong(ordersContainer.getOriginalOrderIdByTransferredId(message.getOrderId())));
 
-            if (ordersContainer.isCurrentSessionOrder(message.getOrderId())) {
+            if (ordersContainer.isCurrentSessionOrder(message.getOrderId()) && !ordersContainer.isOrderAnnounced(message.getOrderId())) {
                 var lastOscm = ordersContainer.getLastOrderStateChangeForOrderId(message.getOrderId());
                 if (lastOscm == null) {
                     log.debug("Handle QLFill: FillId={} will be processed later, no OSCM received", message.getFillId());
@@ -482,7 +480,7 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
         var lastOscm = ordersContainer.getLastOrderStateChangeForTransactionId(message);
 
-        if (lastOscm == null) {
+        if (lastOscm == null || !ordersContainer.isOrderAnnounced(lastOscm.getOrderExchangeId())) {
             ordersContainer.putPendingTransactionReply(message);
             return;
         }
