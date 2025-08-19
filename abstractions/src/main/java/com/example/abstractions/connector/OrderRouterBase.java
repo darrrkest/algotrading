@@ -2,7 +2,7 @@ package com.example.abstractions.connector;
 
 import com.example.abstractions.connector.events.AccountAddedEvent;
 import com.example.abstractions.connector.messages.incoming.FillMessage;
-import com.example.abstractions.connector.messages.incoming.MoneyPosition;
+import com.example.abstractions.connector.messages.incoming.money.MoneyPosition;
 import com.example.abstractions.connector.messages.incoming.PositionMessage;
 import com.example.abstractions.connector.messages.outgoing.Transaction;
 import com.example.abstractions.symbology.Instrument;

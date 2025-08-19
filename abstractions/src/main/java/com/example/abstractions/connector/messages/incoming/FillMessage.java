@@ -42,6 +42,5 @@ public class FillMessage extends AccountMessage {
     @NotNull
     private LiquidityIndicator liquidityIndicator;
 
-    @Nullable
     private double commission;
 }

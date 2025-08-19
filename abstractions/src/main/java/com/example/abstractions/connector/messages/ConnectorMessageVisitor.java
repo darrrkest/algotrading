@@ -1,6 +1,7 @@
 package com.example.abstractions.connector.messages;
 
 import com.example.abstractions.connector.messages.incoming.*;
+import com.example.abstractions.connector.messages.incoming.money.MoneyPosition;
 import org.jetbrains.annotations.NotNull;
 
 public interface ConnectorMessageVisitor {

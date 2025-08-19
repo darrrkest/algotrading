@@ -21,25 +21,35 @@ import java.util.*;
  */
 public class QLOrdersContainer {
     private static final Logger log = LoggerFactory.getLogger(QLOrdersContainer.class);
-    private final Object lock = new Object();
+
+    /**
+     * Лок на операции напрямую не связанных с транзакциями
+     * Над коллекциями processedFills, pendingFills, announcedOrders, mapOrderIdOnOrder, mapOriginalOrderIdOnTransferredOrderId
+     */
+    private final Object commonLock = new Object();
+
+    /**
+     * Лок на операции с транзакциями
+     */
+    private final Object transactionLock = new Object();
+
     private final List<Long> currentSessionTransactionsIds = new ArrayList<>();
     private final List<Long> currentSessionOrderIds = new ArrayList<>();
     private final List<Long> newOrderTransactionsWithoutReplies = new ArrayList<>();
-
     private final Map<Long, NewOrderTransaction> mapQuikTransIdOnNewOrderTransaction = new HashMap<>();
     private final Map<Long, LocalDateTime> mapQuikTransIdOnNewOrderTransactionTime = new HashMap<>();
     private final Map<Long, KillOrderTransaction> mapQuikTransIdOnKillOrderTransaction = new HashMap<>();
     private final Map<Long, KillOrderTransaction> mapOrderIdOnKillOrderTransaction = new HashMap<>();
     private final Map<Long, ModifyOrderTransaction> mapQuikTransIdOnModifyOrderTransaction = new HashMap<>();
     private final Map<Long, List<QLOrderStateChange>> orderStateChanges = new HashMap<>();
-    private final Map<Long, Long> mapOriginalOrderIdOnTransferredOrderId = new HashMap<>();
-    private final Map<Long, QLFill> pendingFills = new HashMap<>();
     private final Map<Long, Long> mapQuikTransIdOnOrderExchangeId = new HashMap<>();
-    private final Map<Long, Order> mapOrderIdOnOrder = new HashMap<>();
-
     private final Map<Long, List<QLOrderStateChange>> mapOrderIdOnPendingOrderStateChange = new HashMap<>();
     private final Map<Long, NewOrderTransaction> mapOrderIdOnNewOrderTransaction = new HashMap<>();
     private final List<QLTransactionReply> pendingTransactionReplies = new ArrayList<>();
+
+    private final Map<Long, Long> mapOriginalOrderIdOnTransferredOrderId = new HashMap<>();
+    private final Map<Long, QLFill> pendingFills = new HashMap<>();
+    private final Map<Long, Order> mapOrderIdOnOrder = new HashMap<>();
     private final HashSet<Long> processedFills = new HashSet<>();
     private final HashSet<Long> announcedOrders = new HashSet<>();
 
@@ -47,7 +57,7 @@ public class QLOrdersContainer {
      * Добавить в очередь ответ на транзакцию
      */
     public void putPendingTransactionReply(QLTransactionReply transactionReply) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             pendingTransactionReplies.add(transactionReply);
         }
     }
@@ -56,7 +66,7 @@ public class QLOrdersContainer {
      * Сохранить сделку, требующую отложенной обработки
      */
     public void putPendingFill(QLFill fill) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             if (pendingFills.containsKey(fill.getFillId())) {
                 log.warn("Duplicate fill received: {}", fill.getFillId());
                 return;
@@ -70,7 +80,7 @@ public class QLOrdersContainer {
      * Сохранить заявку по её биржевому номеру
      */
     public void putOrder(long orderNum, Order order) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             mapOrderIdOnOrder.put(orderNum, order);
         }
     }
@@ -83,7 +93,7 @@ public class QLOrdersContainer {
     public boolean putOrderStateChange(QLOrderStateChange osc) {
         try {
             int prevFilledQuantity, totalFilledQuantity;
-            synchronized (lock) {
+            synchronized (transactionLock) {
                 var changes = orderStateChanges.computeIfAbsent(osc.getOrderExchangeId(), k -> new ArrayList<>());
 
                 if (changes.contains(osc)) {
@@ -115,7 +125,7 @@ public class QLOrdersContainer {
      * Сохраняет биржевой номер заявки в коллекции своих (отправленных в текущую сессию работы) заявок
      */
     public void putOrderExchangeId(long orderExchangeId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             currentSessionOrderIds.add(orderExchangeId);
         }
     }
@@ -124,7 +134,7 @@ public class QLOrdersContainer {
      * Сохранить транзакцию на постановку заявки по её идентификатору
      */
     public void putTransaction(long id, NewOrderTransaction newOrderTransaction) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             currentSessionTransactionsIds.add(id);
             newOrderTransactionsWithoutReplies.add(id);
             mapQuikTransIdOnNewOrderTransaction.put(id, newOrderTransaction);
@@ -136,7 +146,7 @@ public class QLOrdersContainer {
      * Сохранить транзакцию на постановку заявки по её идентификатору
      */
     public void putTransaction(long id, KillOrderTransaction killOrderTransaction) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             long orderExchangeId;
 
             try {
@@ -159,7 +169,7 @@ public class QLOrdersContainer {
     @Nullable
     public List<QLOrderStateChange> putTransactionReply(QLTransactionReply message, long orderExchangeId) {
         List<QLOrderStateChange> oscmToProcess = null;
-        synchronized (lock) {
+        synchronized (transactionLock) {
             if (!newOrderTransactionsWithoutReplies.contains(orderExchangeId)) return null;
         }
 
@@ -198,7 +208,7 @@ public class QLOrdersContainer {
      * Положить OSCM в отложенную обработку
      */
     public void putPendingOrderStateChange(QLOrderStateChange oscm) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             mapOrderIdOnPendingOrderStateChange
                     .computeIfAbsent(oscm.getOrderExchangeId(), k -> new ArrayList<>())
                     .add(oscm);
@@ -210,7 +220,7 @@ public class QLOrdersContainer {
      * сделка была сохранена ранее.
      */
     public boolean putFill(long fillId) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             return processedFills.add(fillId);
         }
     }
@@ -221,7 +231,7 @@ public class QLOrdersContainer {
     public List<QLTransactionReply> getPendingTransactionReplies() {
         ArrayList<QLTransactionReply> values;
 
-        synchronized (lock) {
+        synchronized (transactionLock) {
             values = new ArrayList<>(pendingTransactionReplies);
             pendingTransactionReplies.clear();
         }
@@ -231,12 +241,11 @@ public class QLOrdersContainer {
 
     /**
      * Возвращает копию коллекции ожидающих сделок
-     *
      */
     public List<QLFill> getPendingFills() {
         ArrayList<QLFill> values;
 
-        synchronized (lock) {
+        synchronized (commonLock) {
             values = new ArrayList<>(pendingFills.values());
             pendingFills.clear();
         }
@@ -251,7 +260,7 @@ public class QLOrdersContainer {
     public QLOrderStateChange getLastOrderStateChangeForTransactionId(QLTransactionReply reply) {
         QLOrderStateChange value;
 
-        synchronized (lock) {
+        synchronized (transactionLock) {
             var orderId = mapQuikTransIdOnOrderExchangeId.get(reply.getTransId());
             if (orderId == null) {
                 orderId = reply.getOrderNum();
@@ -275,7 +284,7 @@ public class QLOrdersContainer {
     public QLOrderStateChange getLastOrderStateChangeForOrderId(long orderId) {
         QLOrderStateChange value;
 
-        synchronized (lock) {
+        synchronized (transactionLock) {
             var oscms = orderStateChanges.get(orderId);
             if (oscms == null || oscms.isEmpty()) {
                 return null;
@@ -294,7 +303,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public NewOrderTransaction getNewOrderTransaction(long transId, long orderId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             var value = mapQuikTransIdOnNewOrderTransaction.get(transId);
             if (value == null) {
                 value = mapOrderIdOnNewOrderTransaction.get(orderId);
@@ -309,7 +318,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public NewOrderTransaction getNewOrderTransaction(long transId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return mapOrderIdOnNewOrderTransaction.get(transId);
         }
     }
@@ -319,7 +328,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public ModifyOrderTransaction getModifyOrderTransactionByTransId(long transId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return mapQuikTransIdOnModifyOrderTransaction.get(transId);
         }
     }
@@ -329,7 +338,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public KillOrderTransaction getKillOrderTransactionByTransId(long transId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return mapQuikTransIdOnKillOrderTransaction.get(transId);
         }
     }
@@ -339,7 +348,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public KillOrderTransaction getKillOrderTransactionByOrderId(long orderId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return mapOrderIdOnKillOrderTransaction.get(orderId);
         }
     }
@@ -349,7 +358,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public Order getOrder(long orderNum) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             return mapOrderIdOnOrder.get(orderNum);
         }
     }
@@ -358,7 +367,7 @@ public class QLOrdersContainer {
      * Возвращает true если заявка с биржевым номером orderExchangeId отправлялась в текущей сессии работы программы
      */
     public boolean isCurrentSessionOrder(long orderExchangeId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return currentSessionOrderIds.contains(orderExchangeId);
         }
     }
@@ -367,7 +376,7 @@ public class QLOrdersContainer {
      * Удалить отложенный ответ на транзакцию
      */
     public void removeProcessedPendingReply(QLTransactionReply reply) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             pendingTransactionReplies.remove(reply);
         }
     }
@@ -376,7 +385,7 @@ public class QLOrdersContainer {
      * Проверяет есть ли транзакции на постановку заявки, на которые ещё не пришёл ответ
      */
     public boolean hasUnRepliedTransactions() {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return !pendingTransactionReplies.isEmpty();
         }
     }
@@ -385,7 +394,7 @@ public class QLOrdersContainer {
      * Возвращает true, если транзакция с идентификатором transactionId ещё не дождалась своего transactionReply
      */
     public boolean isTransactionUnReplied(long transactionId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             return newOrderTransactionsWithoutReplies.contains(transactionId);
         }
     }
@@ -394,7 +403,7 @@ public class QLOrdersContainer {
      * Метод пытается найти соответсвующую oscm NewOrderTransaction, которая пока не получила QlTransactionReply
      */
     public long tryFindInitiatingTransaction(QLOrderStateChange oscm) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             List<Map.Entry<Long, NewOrderTransaction>> unrepliedTransactions = new ArrayList<>();
 
             for (Long transId : newOrderTransactionsWithoutReplies) {
@@ -450,7 +459,7 @@ public class QLOrdersContainer {
             id = 0L;
         }
 
-        synchronized (lock) {
+        synchronized (commonLock) {
             mapOriginalOrderIdOnTransferredOrderId.put(id, transferredId);
         }
     }
@@ -467,7 +476,7 @@ public class QLOrdersContainer {
             return originalId;
         }
 
-        synchronized (lock) {
+        synchronized (commonLock) {
             while (true) {
                 Long transferId = mapOriginalOrderIdOnTransferredOrderId.get(currentId);
                 if (transferId == null) {
@@ -482,7 +491,7 @@ public class QLOrdersContainer {
      * Возвращает исходный ID заявки по ID перенесённой заявки
      */
     public String getOriginalOrderIdByTransferredId(long transferredOrderId) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             while (true) {
                 Long finalTransferredOrderId = transferredOrderId;
                 Optional<Map.Entry<Long, Long>> kvp = mapOriginalOrderIdOnTransferredOrderId.entrySet()
@@ -504,7 +513,7 @@ public class QLOrdersContainer {
      */
     @Nullable
     public UUID getOriginalOrderTransactionId(long orderId) {
-        synchronized (lock) {
+        synchronized (transactionLock) {
             var transaction = mapOrderIdOnNewOrderTransaction.get(orderId);
             return transaction != null ? transaction.getTransactionId() : null;
         }
@@ -515,7 +524,7 @@ public class QLOrdersContainer {
      * @param orderId биржевой идентификатор заявки
      */
     public void markOrderAnnounced(long orderId) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             announcedOrders.add(orderId);
         }
     }
@@ -525,10 +534,8 @@ public class QLOrdersContainer {
      * @param orderId биржевой идентификатор заявки
      */
     public boolean isOrderAnnounced(long orderId) {
-        synchronized (lock) {
+        synchronized (commonLock) {
             return announcedOrders.contains(orderId);
         }
     }
-
-
 }

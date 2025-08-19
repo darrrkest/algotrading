@@ -3,6 +3,8 @@ package com.example.quik;
 import com.example.abstractions.connector.ConnectorType;
 import com.example.abstractions.connector.OrderRouterBase;
 import com.example.abstractions.connector.messages.incoming.*;
+import com.example.abstractions.connector.messages.incoming.money.MoneyPosition;
+import com.example.abstractions.connector.messages.incoming.money.MoneyPositionPropertyNames;
 import com.example.abstractions.connector.messages.outgoing.*;
 import com.example.abstractions.execution.*;
 import com.example.abstractions.symbology.Instrument;
@@ -16,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -349,7 +352,17 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
     }
 
     private void handle(QLMoneyPosition message) {
-        // TODO MoneyPosition
+        var moneyPosition = MoneyPosition.builder()
+                .account(message.getAccount())
+                .build();
+
+        moneyPosition.set(MoneyPositionPropertyNames.openLimit, message.getOpenPositionLimit());
+        moneyPosition.set(MoneyPositionPropertyNames.plannedPurePosition, message.getPlannedPosition());
+        moneyPosition.set(MoneyPositionPropertyNames.commission, message.getCommission());
+        moneyPosition.set(MoneyPositionPropertyNames.variationMargin, message.getVarMargin());
+        moneyPosition.set(MoneyPositionPropertyNames.currentPurePosition, message.getCurrentPosition());
+
+        raiseMessageReceived(this, moneyPosition);
     }
 
     private void handle(QLPosition message) {
@@ -758,12 +771,16 @@ public final class QLRouterImpl extends OrderRouterBase implements QLRouter {
 
     @Override
     public void visit(@NotNull KillOrderTransaction transaction) {
-        var newOrderTransactionId = incTransId();
-        var trans = QLTransaction.fromKillOrderTransaction(transaction, newOrderTransactionId);
+        var killOrderTransactionId = incTransId();
+
+        // Перезапись биржевого ID в случае перенесенной заявки
+        var orderKey = ordersContainer.getTransferredOrderId(transaction.getOrderExchangeId());
+
+        var trans = QLTransaction.fromKillOrderTransaction(transaction, killOrderTransactionId, orderKey);
 
         log.debug("visit KillOrderTransaction {}", trans);
 
-        ordersContainer.putTransaction(newOrderTransactionId, transaction);
+        ordersContainer.putTransaction(killOrderTransactionId, transaction);
         adapter.sendMessage(trans);
     }
 

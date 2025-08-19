@@ -151,7 +151,7 @@ public final class QLTransaction extends QLMessage {
                 .build();
     }
 
-    public static QLTransaction fromKillOrderTransaction(KillOrderTransaction transaction, long transId) {
+    public static QLTransaction fromKillOrderTransaction(KillOrderTransaction transaction, long transId, String orderKey) {
         return builder()
                 .action(QLOrderAction.KILL_ORDER)
                 .account(transaction.getAccount())
@@ -160,7 +160,7 @@ public final class QLTransaction extends QLMessage {
                 .classCode(getClassCode(transaction.getInstrument()))
                 .executionCondition(QLExecutionCondition.PUT_IN_QUEUE)
                 .transId(String.valueOf(transId))
-                .orderKey(transaction.getOrderExchangeId())
+                .orderKey(orderKey)
                 .build();
     }
 

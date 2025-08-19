@@ -75,7 +75,7 @@ public final class InstrumentParams extends InstrumentMessage {
     private final double IV;
 
     /**
-     * Воемя окончания торговой сессии
+     * Время окончания торговой сессии
      */
     @NotNull
     private final LocalTime sessionEndTime;

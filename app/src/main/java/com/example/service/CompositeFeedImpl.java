@@ -1,10 +1,10 @@
 package com.example.service;
 
 import com.example.abstractions.connector.Connector;
-import com.example.abstractions.connector.Feed;
 import com.example.abstractions.connector.SubscriptionResult;
 import com.example.abstractions.connector.messages.ConnectorMessage;
 import com.example.abstractions.connector.messages.incoming.*;
+import com.example.abstractions.connector.messages.incoming.money.MoneyPosition;
 import com.example.abstractions.symbology.Instrument;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

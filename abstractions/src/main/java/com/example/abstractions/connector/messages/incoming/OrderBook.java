@@ -14,6 +14,7 @@ import java.util.List;
 @Getter
 @SuperBuilder
 public final class OrderBook extends InstrumentMessage {
+
     @NotNull
     private final List<OrderBookItem> items;
 
